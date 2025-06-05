@@ -1,0 +1,43 @@
+{
+  "name": "ccai-node",
+  "version": "1.0.0",
+  "description": "TypeScript client for CloudContactAI API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "biome check ./src",
+    "lint:fix": "biome check --apply ./src",
+    "format": "biome format ./src",
+    "format:fix": "biome format --write ./src",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "sms",
+    "api",
+    "client",
+    "cloud",
+    "contact",
+    "ai",
+    "cloudcontactai"
+  ],
+  "author": "CloudContactAI LLC",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.7"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.5.3",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.3.3"
+  }
+}
