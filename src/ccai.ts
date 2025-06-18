@@ -8,6 +8,7 @@
 
 import axios, { AxiosResponse } from 'axios';
 import { SMS } from './sms/sms';
+import { MMS } from './sms/mms';
 
 // Define types for type safety
 export type Account = {
@@ -27,6 +28,7 @@ export class CCAI {
   private apiKey: string;
   private baseUrl: string;
   public sms: SMS;
+  public mms: MMS;
 
   /**
    * Create a new CCAI client instance
@@ -40,8 +42,9 @@ export class CCAI {
     this.apiKey = config.apiKey;
     this.baseUrl = config.baseUrl || 'https://core.cloudcontactai.com/api';
     
-    // Initialize the SMS service
+    // Initialize the SMS and MMS services
     this.sms = new SMS(this);
+    this.mms = new MMS(this);
   }
 
   /**

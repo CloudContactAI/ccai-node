@@ -7,6 +7,8 @@
 
 import axios from 'axios';
 import { CCAI, CCAIConfig } from '../ccai';
+import { SMS } from '../sms/sms';
+import { MMS } from '../sms/mms';
 
 // Mock axios
 jest.mock('axios');
@@ -45,6 +47,16 @@ describe('CCAI', () => {
 
     it('should throw an error if apiKey is missing', () => {
       expect(() => new CCAI({ clientId: 'test-client-id' } as CCAIConfig)).toThrow('API Key is required');
+    });
+    
+    it('should initialize the SMS service', () => {
+      const ccai = new CCAI(defaultConfig);
+      expect(ccai.sms).toBeInstanceOf(SMS);
+    });
+    
+    it('should initialize the MMS service', () => {
+      const ccai = new CCAI(defaultConfig);
+      expect(ccai.mms).toBeInstanceOf(MMS);
     });
   });
 

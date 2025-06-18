@@ -1,6 +1,6 @@
 # CCAI Node.js Client
 
-A TypeScript client for the Cloud Contact AI API that allows you to easily send SMS messages.
+A TypeScript client for the Cloud Contact AI API that allows you to easily send SMS and MMS messages.
 
 ## Requirements
 
@@ -19,6 +19,8 @@ npm run build
 ```
 
 ## Usage
+
+### SMS
 
 ```typescript
 import { CCAI } from 'ccai-node';
@@ -56,6 +58,62 @@ ccai.sms.sendSingle(
 )
   .then(response => console.log('Success:', response))
   .catch(error => console.error('Error:', error));
+```
+
+### MMS
+
+```typescript
+import { CCAI, Account, SMSOptions } from 'ccai-node';
+
+// Initialize the client
+const ccai = new CCAI({
+  clientId: 'YOUR-CLIENT-ID',
+  apiKey: 'API-KEY-TOKEN'
+});
+
+// Define a progress callback
+const trackProgress = (status: string) => {
+  console.log(`Progress: ${status}`);
+};
+
+// Create options with progress tracking
+const options: SMSOptions = {
+  timeout: 60000,
+  onProgress: trackProgress
+};
+
+// Complete MMS workflow (get URL, upload image, send MMS)
+async function sendMmsWithImage() {
+  try {
+    // Path to your image file
+    const imagePath = 'path/to/your/image.jpg';
+    const contentType = 'image/jpeg';
+    
+    // Define recipient
+    const account: Account = {
+      firstName: 'John',
+      lastName: 'Doe',
+      phone: '+15551234567'
+    };
+    
+    // Send MMS with image in one step
+    const response = await ccai.mms.sendWithImage(
+      imagePath,
+      contentType,
+      [account],
+      "Hello ${firstName}, check out this image!",
+      "MMS Campaign Example",
+      options
+    );
+    
+    console.log(`MMS sent! Campaign ID: ${response.campaignId}`);
+  } catch (error) {
+    console.error('Error sending MMS:', error);
+  }
+}
+
+// Call the function
+sendMmsWithImage();
 ```
 
 ### Using Async/Await
@@ -96,6 +154,7 @@ async function sendMessages() {
   - `ccai.ts` - Main CCAI client class
   - `sms/` - SMS-related functionality
     - `sms.ts` - SMS service class
+    - `mms.ts` - MMS service class
   - `index.ts` - Main exports
   - `examples/` - Example usage
   - `__tests__/` - Test files
@@ -192,7 +251,9 @@ This project includes a `.gitignore` file that excludes:
 
 - TypeScript support with full type definitions
 - Promise-based API with async/await support
-- Support for sending to multiple recipients
+- Support for sending SMS to multiple recipients
+- Support for sending MMS with images
+- Upload images to S3 with signed URLs
 - Support for template variables (firstName, lastName)
 - Progress tracking via callbacks
 - Comprehensive error handling

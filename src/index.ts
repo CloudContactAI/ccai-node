@@ -9,9 +9,11 @@ import { CCAI } from './ccai';
 import type { Account, CCAIConfig } from './ccai';
 import { SMS } from './sms/sms';
 import type { SMSCampaign, SMSResponse, SMSOptions } from './sms/sms';
+import { MMS } from './sms/mms';
+import type { SignedUrlResponse } from './sms/mms';
 
 // Re-export classes
-export { CCAI, SMS };
+export { CCAI, SMS, MMS };
 
 // Re-export types using 'export type'
 export type {
@@ -19,5 +21,6 @@ export type {
   CCAIConfig,
   SMSCampaign,
   SMSResponse,
-  SMSOptions
+  SMSOptions,
+  SignedUrlResponse
 };
