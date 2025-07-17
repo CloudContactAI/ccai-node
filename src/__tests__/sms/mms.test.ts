@@ -277,9 +277,10 @@ describe('MMS', () => {
       
       await mms.send(pictureFileKey, validAccounts, message, title, options);
       
-      expect(onProgress).toHaveBeenCalledTimes(2);
+      expect(onProgress).toHaveBeenCalledTimes(3);
       expect(onProgress).toHaveBeenNthCalledWith(1, 'Preparing to send MMS');
       expect(onProgress).toHaveBeenNthCalledWith(2, 'Sending MMS');
+      expect(onProgress).toHaveBeenNthCalledWith(3, 'MMS sent successfully');
     });
     
     it('should call progress callback on error', async () => {

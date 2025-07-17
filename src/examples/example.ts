@@ -12,7 +12,7 @@ import type { Account, SMSResponse } from '../index';
 // Replace these values with your actual credentials
 const ccai = new CCAI({
   clientId: 'YOUR-CLIENT-ID',
-  apiKey: 'API-KEY-TOKEN'
+  apiKey: 'YOUR-API-KEY'
 });
 
 // Example recipients

@@ -5,24 +5,31 @@
  * @copyright 2025 CloudContactAI LLC
  */
 
-import { CCAI } from '../../ccai';
+import { CCAI, Account } from '../../ccai';
 import { SMS, SMSOptions } from '../../sms/sms';
-import { Account } from '../../ccai';
-
-// Mock the CCAI class
-jest.mock('../../ccai');
 
 describe('SMS', () => {
-  // Create mocks
-  const mockCcai = {
-    getClientId: jest.fn().mockReturnValue('test-client-id'),
-    getApiKey: jest.fn().mockReturnValue('test-api-key'),
-    getBaseUrl: jest.fn().mockReturnValue('https://test-api.com'),
-    request: jest.fn()
-  };
+  let ccai: CCAI;
+  let sms: SMS;
   
-  // Cast the mock to CCAI type
-  const ccai = mockCcai as unknown as CCAI;
+  // Mock the request method
+  const mockRequest = jest.fn();
+  
+  beforeEach(() => {
+    // Create a real CCAI instance
+    ccai = new CCAI({
+      clientId: 'test-client-id',
+      apiKey: 'test-api-key'
+    });
+    
+    // Mock the request method
+    ccai.request = mockRequest;
+    
+    sms = new SMS(ccai);
+    
+    // Clear all mocks
+    jest.clearAllMocks();
+  });
   
   // Test data
   const validAccounts: Account[] = [
@@ -36,24 +43,14 @@ describe('SMS', () => {
   const message = 'Hello ${firstName}!';
   const title = 'Test Campaign';
   
-  let sms: SMS;
-  
-  beforeEach(() => {
-    // Clear all mocks before each test
-    jest.clearAllMocks();
-    
-    // Create a new SMS instance for each test
-    sms = new SMS(ccai);
-  });
-  
   describe('send', () => {
     it('should send an SMS campaign successfully', async () => {
       const mockResponse = { id: '123', status: 'success' };
-      mockCcai.request.mockResolvedValueOnce(mockResponse);
+      mockRequest.mockResolvedValueOnce(mockResponse);
       
       const result = await sms.send(validAccounts, message, title);
       
-      expect(mockCcai.request).toHaveBeenCalledWith(
+      expect(mockRequest).toHaveBeenCalledWith(
         'post',
         '/clients/test-client-id/campaigns/direct',
         {
@@ -96,20 +93,21 @@ describe('SMS', () => {
     
     it('should call progress callback if provided', async () => {
       const mockResponse = { id: '123', status: 'success' };
-      mockCcai.request.mockResolvedValueOnce(mockResponse);
+      mockRequest.mockResolvedValueOnce(mockResponse);
       
       const onProgress = jest.fn();
       const options: SMSOptions = { onProgress };
       
       await sms.send(validAccounts, message, title, options);
       
-      expect(onProgress).toHaveBeenCalledTimes(2);
+      expect(onProgress).toHaveBeenCalledTimes(3);
       expect(onProgress).toHaveBeenNthCalledWith(1, 'Preparing to send SMS');
       expect(onProgress).toHaveBeenNthCalledWith(2, 'Sending SMS');
+      expect(onProgress).toHaveBeenNthCalledWith(3, 'SMS sent successfully');
     });
     
     it('should call progress callback on error', async () => {
-      mockCcai.request.mockRejectedValueOnce(new Error('API Error'));
+      mockRequest.mockRejectedValueOnce(new Error('API Error'));
       
       const onProgress = jest.fn();
       const options: SMSOptions = { onProgress };
@@ -125,11 +123,11 @@ describe('SMS', () => {
   describe('sendSingle', () => {
     it('should send a single SMS message', async () => {
       const mockResponse = { id: '123', status: 'success' };
-      mockCcai.request.mockResolvedValueOnce(mockResponse);
+      mockRequest.mockResolvedValueOnce(mockResponse);
       
       const result = await sms.sendSingle('John', 'Doe', '+15551234567', message, title);
       
-      expect(mockCcai.request).toHaveBeenCalledWith(
+      expect(mockRequest).toHaveBeenCalledWith(
         'post',
         '/clients/test-client-id/campaigns/direct',
         {

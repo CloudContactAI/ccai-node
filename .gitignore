@@ -82,3 +82,6 @@ temp/
 
 # Jest coverage
 coverage/
+
+# Test files
+image.jpg

@@ -12,7 +12,7 @@ import { MMS } from '../sms/mms';
 
 // Mock axios
 jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedAxios = jest.mocked(axios);
 
 describe('CCAI', () => {
   // Default config for tests

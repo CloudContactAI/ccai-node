@@ -161,7 +161,5 @@ async function sendSingleMms() {
   }
 }
 
-// Uncomment the example you want to run
-// sendMmsWithImage();
-// sendMmsStepByStep();
-// sendSingleMms();
+// Export functions to prevent unused warnings
+export { sendMmsWithImage, sendMmsStepByStep, sendSingleMms };

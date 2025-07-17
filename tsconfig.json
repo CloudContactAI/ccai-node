@@ -29,5 +29,6 @@
     "allowUnreachableCode": false
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "exclude": ["node_modules", "dist"],
+  "types": ["jest", "node"]
 }

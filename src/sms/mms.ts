@@ -210,10 +210,11 @@ export class MMS {
       
       // Make the API request
       const url = `${this.ccai.getBaseUrl()}${endpoint}`;
-      const response = await axios.post(url, campaignData, {
-        headers,
-        timeout: options?.timeout
-      });
+      const axiosConfig: any = { headers };
+      if (options?.timeout) {
+        axiosConfig.timeout = options.timeout;
+      }
+      const response = await axios.post(url, campaignData, axiosConfig);
       
       // Notify progress if callback provided
       if (options?.onProgress) {
