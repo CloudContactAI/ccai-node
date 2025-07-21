@@ -9,6 +9,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { SMS } from './sms/sms';
 import { MMS } from './sms/mms';
+import { Webhook } from './webhook/webhook';
 
 // Define types for type safety
 export type Account = {
@@ -29,6 +30,7 @@ export class CCAI {
   private baseUrl: string;
   public sms: SMS;
   public mms: MMS;
+  public webhook: Webhook;
 
   /**
    * Create a new CCAI client instance
@@ -45,6 +47,7 @@ export class CCAI {
     // Initialize the SMS and MMS services
     this.sms = new SMS(this);
     this.mms = new MMS(this);
+    this.webhook = new Webhook(this);
   }
 
   /**

@@ -1,6 +1,6 @@
 # CCAI Node.js Client
 
-A TypeScript client for the Cloud Contact AI API that allows you to easily send SMS and MMS messages.
+A TypeScript client for the Cloud Contact AI API that allows you to easily send SMS and MMS messages, and handle webhook callbacks.
 
 ## Requirements
 
@@ -116,6 +116,129 @@ async function sendMmsWithImage() {
 sendMmsWithImage();
 ```
 
+### Webhooks
+
+CloudContactAI can send webhook notifications when certain events occur, such as when messages are sent or received. The library provides utilities to handle these webhook events in Next.js applications.
+
+#### Webhook Events
+
+CloudContactAI currently supports the following webhook events:
+
+1. **Message Sent (Outbound)** - Triggered when a message is sent from your CloudContactAI account
+2. **Message Received (Inbound)** - Triggered when a message is received by your CloudContactAI account
+
+#### Event Payload Schema
+
+**Message Sent Event:**
+```json
+{
+  "type": "message.sent",
+  "campaign": {
+    "id": 123,
+    "title": "Default Campaign",
+    "message": "",
+    "senderPhone": "+11234567894",
+    "createdAt": "2025-07-14 22:18:28.273",
+    "runAt": ""
+  },
+  "from": "+11234567894",
+  "to": "+11453215437",
+  "message": "this is a test message for Jon Doe"
+}
+```
+
+**Message Received Event:**
+```json
+{
+  "type": "message.received",
+  "campaign": {
+    "id": 123,
+    "title": "Default Campaign",
+    "message": "",
+    "senderPhone": "+11234567894",
+    "createdAt": "2025-07-14 22:18:28.273",
+    "runAt": ""
+  },
+  "from": "+11453215437",
+  "to": "+11234567894",
+  "message": "this is a reply message from Jon Doe"
+}
+```
+
+#### Using Webhooks with Next.js
+
+```typescript
+// pages/api/ccai-webhook.ts
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { createWebhookHandler, WebhookEventType } from 'ccai-node';
+
+export default createWebhookHandler({
+  // Optional: Secret for verifying webhook signatures
+  secret: process.env.CCAI_WEBHOOK_SECRET,
+  
+  // Handler for outbound messages
+  onMessageSent: async (event) => {
+    console.log('Message sent event received:');
+    console.log(`Campaign: ${event.campaign.title} (ID: ${event.campaign.id})`);
+    console.log(`From: ${event.from}`);
+    console.log(`To: ${event.to}`);
+    console.log(`Message: ${event.message}`);
+    
+    // Your custom logic here
+  },
+  
+  // Handler for inbound messages
+  onMessageReceived: async (event) => {
+    console.log('Message received event received:');
+    console.log(`Campaign: ${event.campaign.title} (ID: ${event.campaign.id})`);
+    console.log(`From: ${event.from}`);
+    console.log(`To: ${event.to}`);
+    console.log(`Message: ${event.message}`);
+    
+    // Your custom logic here
+  },
+  
+  // Optional: Log events to console
+  logEvents: true
+});
+```
+
+#### Simple Webhook Handler
+
+If you prefer a simpler approach, you can handle webhooks manually:
+
+```typescript
+// pages/api/simple-webhook.ts
+import type { NextApiRequest, NextApiResponse } from 'next';
+
+export default (req: NextApiRequest, res: NextApiResponse) => {
+  if (req.method === 'POST') {
+    const payload = req.body;
+    console.log('Webhook payload:', payload);
+    
+    // Process the webhook based on its type
+    if (payload.type === 'message.sent') {
+      // Handle outbound message event
+    } else if (payload.type === 'message.received') {
+      // Handle inbound message event
+    }
+    
+    // Always respond with a 200 status code
+    res.status(200).json({ received: true });
+  } else {
+    res.status(405).json({ error: 'Method not allowed' });
+  }
+};
+```
+
+#### Configuring Webhooks
+
+Webhooks are configured in the CloudContactAI interface under Settings -> Integrations. You'll need to provide:
+
+1. A webhook URL (e.g., https://your-app.com/api/ccai-webhook)
+2. The events you want to receive (Message Sent, Message Received)
+3. Optionally, a secret for webhook signature verification
+
 ### Using Async/Await
 
 ```typescript
@@ -155,6 +278,9 @@ async function sendMessages() {
   - `sms/` - SMS-related functionality
     - `sms.ts` - SMS service class
     - `mms.ts` - MMS service class
+  - `webhook/` - Webhook-related functionality
+    - `types.ts` - Type definitions for webhook events
+    - `nextjs.ts` - Next.js integration utilities
   - `index.ts` - Main exports
   - `examples/` - Example usage
   - `__tests__/` - Test files
@@ -254,6 +380,8 @@ This project includes a `.gitignore` file that excludes:
 - Support for sending SMS to multiple recipients
 - Support for sending MMS with images
 - Upload images to S3 with signed URLs
+- Webhook integration for real-time event notifications
+- Next.js API route handlers for webhook events
 - Support for template variables (firstName, lastName)
 - Progress tracking via callbacks
 - Comprehensive error handling
