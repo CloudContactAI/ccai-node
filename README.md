@@ -9,7 +9,7 @@ A TypeScript client for the Cloud Contact AI API that allows you to easily send 
 ## Installation
 
 ```bash
-npm install
+npm install ccai-node
 ```
 
 ## Build

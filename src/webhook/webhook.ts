@@ -63,7 +63,7 @@ export class Webhook {
    * @param secret - Webhook secret
    * @returns boolean indicating if the signature is valid
    */
-  verifySignature(signature: string, body: string, secret: string): boolean {
+  verifySignature(_signature: string, _body: string, _secret: string): boolean {
     // This is a placeholder for signature verification logic
     // In a real implementation, this would use crypto to verify HMAC signatures
     // Example implementation would be similar to how Stripe or GitHub verify webhook signatures

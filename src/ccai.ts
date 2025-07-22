@@ -120,6 +120,12 @@ export class CCAI {
   async customRequest<T>(method: string, endpoint: string, data?: unknown, customBaseUrl?: string): Promise<T> {
     const url = `${customBaseUrl || this.baseUrl}${endpoint}`;
     
+    // Log equivalent curl command
+    const curlCommand = this.generateCurlCommand(method, url, data);
+    console.log('\n📡 Equivalent curl command:');
+    console.log(curlCommand);
+    console.log('');
+    
     try {
       const response: AxiosResponse<T> = await axios({
         method,
@@ -143,5 +149,30 @@ export class CCAI {
         throw error;
       }
     }
+  }
+
+  /**
+   * Generate equivalent curl command for debugging
+   * @param method - HTTP method
+   * @param url - Full URL
+   * @param data - Request data
+   * @returns Curl command string
+   */
+  private generateCurlCommand(method: string, url: string, data?: unknown): string {
+    let curl = `curl -X ${method.toUpperCase()} "${url}"`;
+    curl += ` \\
+  -H "Authorization: Bearer ${this.apiKey}"`;
+    curl += ` \\
+  -H "Content-Type: application/json"`;
+    curl += ` \\
+  -H "Accept: */*"`;
+    
+    if (data) {
+      const jsonData = JSON.stringify(data, null, 2).replace(/"/g, '\\"');
+      curl += ` \\
+  -d "${jsonData}"`;
+    }
+    
+    return curl;
   }
 }

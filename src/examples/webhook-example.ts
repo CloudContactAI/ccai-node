@@ -17,7 +17,7 @@ import { createWebhookHandler, WebhookEventType } from '../index';
  */
 export default createWebhookHandler({
   // Optional: Secret for verifying webhook signatures
-  secret: process.env.CCAI_WEBHOOK_SECRET,
+  // secret: process.env.CCAI_WEBHOOK_SECRET,
   
   // Handler for outbound messages (messages sent from your campaigns)
   onMessageSent: async (event) => {
