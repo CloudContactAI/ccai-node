@@ -11,6 +11,8 @@ import { SMS } from './sms/sms';
 import type { SMSCampaign, SMSResponse, SMSOptions } from './sms/sms';
 import { MMS } from './sms/mms';
 import type { SignedUrlResponse } from './sms/mms';
+import { Email } from './email/email';
+import type { EmailCampaign, EmailResponse, EmailOptions, EmailAccount } from './email/email';
 import { Webhook } from './webhook/webhook';
 import { createWebhookHandler } from './webhook/nextjs';
 import type { WebhookHandlerOptions } from './webhook/nextjs';
@@ -25,7 +27,7 @@ import type {
 import { WebhookEventType } from './webhook/types';
 
 // Re-export classes
-export { CCAI, SMS, MMS, Webhook, WebhookEventType, createWebhookHandler };
+export { CCAI, SMS, MMS, Email, Webhook, WebhookEventType, createWebhookHandler };
 
 // Re-export types using 'export type'
 export type {
@@ -35,6 +37,10 @@ export type {
   SMSResponse,
   SMSOptions,
   SignedUrlResponse,
+  EmailCampaign,
+  EmailResponse,
+  EmailOptions,
+  EmailAccount,
   WebhookConfig,
   WebhookEvent,
   WebhookEventBase,

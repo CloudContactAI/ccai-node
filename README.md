@@ -1,4 +1,4 @@
-# CCAI Node.js Client
+# CloudContactAI Node.js Client - [CloudContactAI](https://www.cloudcontactai.com)
 
 A TypeScript client for the Cloud Contact AI API that allows you to easily send SMS and MMS messages, and handle webhook callbacks.
 

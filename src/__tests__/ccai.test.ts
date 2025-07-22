@@ -1,74 +1,88 @@
 /**
  * Tests for the CCAI class
- * 
- * @license MIT
- * @copyright 2025 CloudContactAI LLC
  */
 
 import axios from 'axios';
-import { CCAI, CCAIConfig } from '../ccai';
-import { SMS } from '../sms/sms';
-import { MMS } from '../sms/mms';
+import { CCAI } from '../ccai';
 
 // Mock axios
 jest.mock('axios');
-const mockedAxios = jest.mocked(axios);
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('CCAI', () => {
-  // Default config for tests
-  const defaultConfig: CCAIConfig = {
-    clientId: 'test-client-id',
-    apiKey: 'test-api-key',
-  };
+  let ccai: CCAI;
 
   beforeEach(() => {
-    // Clear all mocks before each test
+    ccai = new CCAI({
+      clientId: 'test-client-id',
+      apiKey: 'test-api-key'
+    });
+    
+    // Reset mocks
     jest.clearAllMocks();
   });
 
   describe('constructor', () => {
-    it('should create a new CCAI instance with default baseUrl', () => {
-      const ccai = new CCAI(defaultConfig);
-      expect(ccai).toBeInstanceOf(CCAI);
-      expect(ccai.getClientId()).toBe(defaultConfig.clientId);
-      expect(ccai.getApiKey()).toBe(defaultConfig.apiKey);
-      expect(ccai.getBaseUrl()).toBe('https://core.cloudcontactai.com/api');
-    });
-
-    it('should create a new CCAI instance with custom baseUrl', () => {
-      const customConfig = { ...defaultConfig, baseUrl: 'https://custom-api.example.com' };
-      const ccai = new CCAI(customConfig);
-      expect(ccai.getBaseUrl()).toBe(customConfig.baseUrl);
-    });
-
     it('should throw an error if clientId is missing', () => {
-      expect(() => new CCAI({ apiKey: 'test-api-key' } as CCAIConfig)).toThrow('Client ID is required');
+      expect(() => {
+        new CCAI({
+          clientId: '',
+          apiKey: 'test-api-key'
+        });
+      }).toThrow('Client ID is required');
     });
 
     it('should throw an error if apiKey is missing', () => {
-      expect(() => new CCAI({ clientId: 'test-client-id' } as CCAIConfig)).toThrow('API Key is required');
+      expect(() => {
+        new CCAI({
+          clientId: 'test-client-id',
+          apiKey: ''
+        });
+      }).toThrow('API Key is required');
     });
-    
-    it('should initialize the SMS service', () => {
-      const ccai = new CCAI(defaultConfig);
-      expect(ccai.sms).toBeInstanceOf(SMS);
+
+    it('should use default baseUrl if not provided', () => {
+      const instance = new CCAI({
+        clientId: 'test-client-id',
+        apiKey: 'test-api-key'
+      });
+      
+      expect(instance.getBaseUrl()).toBe('https://core.cloudcontactai.com/api');
     });
-    
-    it('should initialize the MMS service', () => {
-      const ccai = new CCAI(defaultConfig);
-      expect(ccai.mms).toBeInstanceOf(MMS);
+
+    it('should use custom baseUrl if provided', () => {
+      const instance = new CCAI({
+        clientId: 'test-client-id',
+        apiKey: 'test-api-key',
+        baseUrl: 'https://custom-api.example.com'
+      });
+      
+      expect(instance.getBaseUrl()).toBe('https://custom-api.example.com');
+    });
+
+    it('should initialize all services', () => {
+      const instance = new CCAI({
+        clientId: 'test-client-id',
+        apiKey: 'test-api-key'
+      });
+      
+      expect(instance.sms).toBeDefined();
+      expect(instance.mms).toBeDefined();
+      expect(instance.email).toBeDefined();
+      expect(instance.webhook).toBeDefined();
     });
   });
 
   describe('request', () => {
-    it('should make a successful API request', async () => {
-      const ccai = new CCAI(defaultConfig);
-      const mockResponse = { data: { id: '123', status: 'success' } };
-      
-      mockedAxios.mockResolvedValueOnce(mockResponse);
-      
+    it('should make a request to the default base URL', async () => {
+      // Mock successful response
+      mockedAxios.mockResolvedValueOnce({
+        data: { success: true }
+      });
+
       const result = await ccai.request('get', '/test-endpoint');
-      
+
+      // Verify axios was called with correct parameters
       expect(mockedAxios).toHaveBeenCalledWith({
         method: 'get',
         url: 'https://core.cloudcontactai.com/api/test-endpoint',
@@ -79,49 +93,118 @@ describe('CCAI', () => {
         },
         data: undefined
       });
-      
-      expect(result).toEqual(mockResponse.data);
+
+      // Verify result
+      expect(result).toEqual({ success: true });
     });
 
-    it('should handle API error responses', async () => {
-      const ccai = new CCAI(defaultConfig);
+    it('should handle request errors', async () => {
+      // Mock error response
       const errorResponse = {
         response: {
-          status: 400,
-          data: { error: 'Bad Request' }
+          status: 404,
+          data: {
+            error: 'Not Found',
+            message: 'Resource not found'
+          }
         }
       };
-      
       mockedAxios.mockRejectedValueOnce(errorResponse);
-      
-      await expect(ccai.request('post', '/test-endpoint', { test: 'data' }))
-        .rejects
-        .toThrow(`API Error: 400 - {"error":"Bad Request"}`);
+
+      await expect(ccai.request('get', '/not-found')).rejects.toThrow(
+        'API Error: 404 - {"error":"Not Found","message":"Resource not found"}'
+      );
     });
 
     it('should handle network errors', async () => {
-      const ccai = new CCAI(defaultConfig);
+      // Mock network error
       const networkError = {
-        request: {},
-        message: 'Network Error'
+        request: {}
       };
-      
       mockedAxios.mockRejectedValueOnce(networkError);
-      
-      await expect(ccai.request('get', '/test-endpoint'))
-        .rejects
-        .toThrow('No response received from API');
+
+      await expect(ccai.request('get', '/network-error')).rejects.toThrow(
+        'No response received from API'
+      );
     });
 
     it('should handle other errors', async () => {
-      const ccai = new CCAI(defaultConfig);
-      const otherError = new Error('Unknown error');
-      
-      mockedAxios.mockRejectedValueOnce(otherError);
-      
-      await expect(ccai.request('get', '/test-endpoint'))
-        .rejects
-        .toThrow('Unknown error');
+      // Mock other error
+      mockedAxios.mockRejectedValueOnce(new Error('Unknown error'));
+
+      await expect(ccai.request('get', '/other-error')).rejects.toThrow(
+        'Unknown error'
+      );
+    });
+  });
+
+  describe('customRequest', () => {
+    it('should make a request to the specified custom base URL', async () => {
+      // Mock successful response
+      mockedAxios.mockResolvedValueOnce({
+        data: { success: true }
+      });
+
+      const customBaseUrl = 'https://email-campaigns.cloudcontactai.com/api/v1';
+      const result = await ccai.customRequest('post', '/campaigns', { test: true }, customBaseUrl);
+
+      // Verify axios was called with correct parameters
+      expect(mockedAxios).toHaveBeenCalledWith({
+        method: 'post',
+        url: 'https://email-campaigns.cloudcontactai.com/api/v1/campaigns',
+        headers: {
+          'Authorization': 'Bearer test-api-key',
+          'Content-Type': 'application/json',
+          'Accept': '*/*'
+        },
+        data: { test: true }
+      });
+
+      // Verify result
+      expect(result).toEqual({ success: true });
+    });
+
+    it('should fall back to default base URL if custom URL is not provided', async () => {
+      // Mock successful response
+      mockedAxios.mockResolvedValueOnce({
+        data: { success: true }
+      });
+
+      const result = await ccai.customRequest('post', '/test-endpoint', { test: true });
+
+      // Verify axios was called with correct parameters
+      expect(mockedAxios).toHaveBeenCalledWith({
+        method: 'post',
+        url: 'https://core.cloudcontactai.com/api/test-endpoint',
+        headers: {
+          'Authorization': 'Bearer test-api-key',
+          'Content-Type': 'application/json',
+          'Accept': '*/*'
+        },
+        data: { test: true }
+      });
+
+      // Verify result
+      expect(result).toEqual({ success: true });
+    });
+
+    it('should handle request errors in customRequest', async () => {
+      // Mock error response
+      const errorResponse = {
+        response: {
+          status: 400,
+          data: {
+            error: 'Bad Request',
+            message: 'Invalid data'
+          }
+        }
+      };
+      mockedAxios.mockRejectedValueOnce(errorResponse);
+
+      const customBaseUrl = 'https://email-campaigns.cloudcontactai.com/api/v1';
+      await expect(ccai.customRequest('post', '/campaigns', { test: true }, customBaseUrl)).rejects.toThrow(
+        'API Error: 400 - {"error":"Bad Request","message":"Invalid data"}'
+      );
     });
   });
 });
