@@ -44,7 +44,7 @@ export class CCAI {
     
     this.clientId = config.clientId;
     this.apiKey = config.apiKey;
-    this.baseUrl = config.baseUrl || 'https://core.cloudcontactai.com/api';
+    this.baseUrl = config.baseUrl || 'https://core-test-cloudcontactai.allcode.com/api';
     
     // Initialize the services
     this.sms = new SMS(this);

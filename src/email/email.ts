@@ -65,7 +65,7 @@ export type EmailOptions = {
 
 export class Email {
   private ccai: CCAI;
-  private baseUrl: string = 'https://email-campaigns.cloudcontactai.com/api/v1';
+  private baseUrl: string = 'https://email-campaigns-test-cloudcontactai.allcode.com/api/v1';
 
   /**
    * Create a new Email service instance
@@ -73,6 +73,44 @@ export class Email {
    */
   constructor(ccai: CCAI) {
     this.ccai = ccai;
+  }
+
+  /**
+   * Make an authenticated API request to the email campaigns API with required headers
+   * @param method - HTTP method
+   * @param endpoint - API endpoint
+   * @param data - Request data
+   * @returns Promise resolving to the API response
+   */
+  private async makeEmailRequest<T>(method: string, endpoint: string, data?: unknown): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    
+    try {
+      const axios = (await import('axios')).default;
+      const response = await axios({
+        method,
+        url,
+        headers: {
+          'Authorization': `Bearer ${this.ccai.getApiKey()}`,
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'clientId': this.ccai.getClientId(),
+          'accountId': '1223' // This should be configurable in the future
+        },
+        data
+      });
+      
+      return response.data;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response: { status: number; data: unknown } };
+        throw new Error(`API Error: ${axiosError.response.status} - ${JSON.stringify(axiosError.response.data)}`);
+      } else if (error && typeof error === 'object' && 'request' in error) {
+        throw new Error('No response received from API');
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**
@@ -117,12 +155,11 @@ export class Email {
         options.onProgress('Sending email campaign');
       }
       
-      // Make the API request to the email campaigns API
-      const response = await this.ccai.customRequest<EmailResponse>(
-        'post', 
+      // Make the API request to the email campaigns API with custom headers
+      const response = await this.makeEmailRequest<EmailResponse>(
+        'POST', 
         endpoint, 
-        campaign, 
-        this.baseUrl
+        campaign
       );
       
       // Notify progress if callback provided
