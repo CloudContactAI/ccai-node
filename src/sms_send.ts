@@ -1,8 +1,9 @@
+import 'dotenv/config';
 import { CCAI } from './ccai';
 
 const ccai = new CCAI({
-  clientId: 'YOUR-CLIENT-ID',
-  apiKey: 'YOUR-API-KEY'
+  clientId: process.env.CCAI_CLIENT_ID || '',
+  apiKey: process.env.CCAI_API_KEY || '',
 });
 
 async function sendSMS() {

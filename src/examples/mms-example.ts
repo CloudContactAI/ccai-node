@@ -5,16 +5,16 @@
  * @copyright 2025 CloudContactAI LLC
  */
 
+import dotenv from 'dotenv';
 import { CCAI, Account, SMSOptions } from '../index';
 
-// Replace with your actual credentials
-const CLIENT_ID = 'your-client-id';
-const API_KEY = 'your-api-key';
+// Load environment variables
+dotenv.config();
 
 // Initialize the CCAI client
 const ccai = new CCAI({
-  clientId: CLIENT_ID,
-  apiKey: API_KEY
+  clientId: process.env.CCAI_CLIENT_ID || '',
+  apiKey: process.env.CCAI_API_KEY || ''
 });
 
 // Define a progress callback
@@ -141,7 +141,7 @@ async function sendMmsStepByStep() {
 async function sendSingleMms() {
   try {
     // Define the file key of an already uploaded image
-    const pictureFileKey = `${CLIENT_ID}/campaign/your-image.jpg`;
+    const pictureFileKey = `${process.env.CCAI_CLIENT_ID}/campaign/your-image.jpg`;
     
     // Send a single MMS
     const response = await ccai.mms.sendSingle(

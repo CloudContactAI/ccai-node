@@ -1,8 +1,12 @@
+import dotenv from 'dotenv';
 import { CCAI } from './ccai';
 
+// Load environment variables
+dotenv.config();
+
 const ccai = new CCAI({
-  clientId: 'YOUR-CLIENT-ID',
-  apiKey: 'YOUR-API-KEY'
+  clientId: process.env.CCAI_CLIENT_ID || '',
+  apiKey: process.env.CCAI_API_KEY || ''
 });
 
 async function sendMMS() {
@@ -12,9 +16,9 @@ async function sendMMS() {
     const contentType = 'image/jpeg';
     
     const accounts = [{
-      firstName: "John",
-      lastName: "Doe",
-      phone: "+15551234567"
+      firstName: "Thavas",
+      lastName: "Antonio",
+      phone: "+15551234567"  // Update with actual phone number
     }];
 
     const response = await ccai.mms.sendWithImage(

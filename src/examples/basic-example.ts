@@ -5,13 +5,17 @@
  * @copyright 2025 CloudContactAI LLC
  */
 
+import dotenv from 'dotenv';
 import { CCAI } from '../ccai';
 import type { Account, SMSResponse } from '../index';
 
+// Load environment variables
+dotenv.config();
+
 // Create a new CCAI client
 const ccai = new CCAI({
-  clientId: 'YOUR-CLIENT-ID',
-  apiKey: 'API-KEY-TOKEN'
+  clientId: process.env.CCAI_CLIENT_ID || '',
+  apiKey: process.env.CCAI_API_KEY || ''
 });
 
 // Example recipients
