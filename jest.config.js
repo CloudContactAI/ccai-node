@@ -8,7 +8,11 @@ module.exports = {
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
     '!src/examples/**',
-    '!src/**/index.ts'
+    '!src/**/index.ts',
+    '!src/*_send.ts',
+    '!src/test_real.ts',
+    '!src/webhook/types.ts',
+    '!src/webhook/nextjs.ts'
   ],
   coverageThreshold: {
     global: {

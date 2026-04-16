@@ -1,6 +1,6 @@
 /**
  * Types for CloudContactAI webhook events
- * 
+ *
  * @license MIT
  * @copyright 2025 CloudContactAI LLC
  */
@@ -21,10 +21,9 @@ export interface WebhookCampaign {
  * Base interface for all webhook events
  */
 export interface WebhookEventBase {
-  campaign: WebhookCampaign;
-  from: string;
-  to: string;
-  message: string;
+  eventType: string;
+  data: Record<string, unknown>;
+  eventHash: string; // Hash computed by the backend, used for signature verification
 }
 
 /**
@@ -32,33 +31,30 @@ export interface WebhookEventBase {
  */
 export enum WebhookEventType {
   MESSAGE_SENT = 'message.sent',
-  MESSAGE_RECEIVED = 'message.received'
+  MESSAGE_RECEIVED = 'message.received',
+  MESSAGE_INCOMING = 'message.incoming',
+  MESSAGE_EXCLUDED = 'message.excluded',
+  MESSAGE_ERROR_CARRIER = 'message.error.carrier',
+  MESSAGE_ERROR_CLOUDCONTACT = 'message.error.cloudcontact',
 }
 
 /**
- * Message Sent (Outbound) webhook event
+ * Generic webhook event structure
  */
-export interface MessageSentEvent extends WebhookEventBase {
-  type: WebhookEventType.MESSAGE_SENT;
+export interface WebhookEvent extends WebhookEventBase {
+  eventType: string;
+  data: Record<string, unknown>;
+  eventHash: string;
 }
-
-/**
- * Message Received (Inbound) webhook event
- */
-export interface MessageReceivedEvent extends WebhookEventBase {
-  type: WebhookEventType.MESSAGE_RECEIVED;
-}
-
-/**
- * Union type for all webhook events
- */
-export type WebhookEvent = MessageSentEvent | MessageReceivedEvent;
 
 /**
  * Configuration for webhook integration
  */
 export interface WebhookConfig {
   url: string;
-  events: WebhookEventType[];
+  events?: WebhookEventType[];
   secret?: string; // Optional secret for webhook signature verification
+  secretKey?: string; // Alternative key name
+  method?: string;
+  integrationType?: string;
 }
