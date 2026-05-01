@@ -1,6 +1,6 @@
 # CloudContactAI Node.js Client - [CloudContactAI](https://www.cloudcontactai.com)
 
-A TypeScript client for the Cloud Contact AI API that allows you to easily send SMS and MMS messages, and handle webhook callbacks.
+A TypeScript client for the Cloud Contact AI API that allows you to easily send SMS and MMS messages, send email campaigns, manage webhooks, and manage contact opt-out preferences.
 
 ## Requirements
 
@@ -116,9 +116,139 @@ async function sendMmsWithImage() {
 sendMmsWithImage();
 ```
 
+### Email
+
+```typescript
+import { CCAI } from 'ccai-node';
+
+const ccai = new CCAI({
+  clientId: 'YOUR-CLIENT-ID',
+  apiKey: 'API-KEY-TOKEN'
+});
+
+// Send a single email
+const response = await ccai.email.sendSingle(
+  'John',
+  'Doe',
+  'john@example.com',
+  'Welcome to Our Service',
+  '<p>Hello ${firstName},</p><p>Thank you for signing up!</p>',
+  'noreply@yourcompany.com',
+  'support@yourcompany.com',
+  'Your Company',
+  'Welcome Email'
+);
+console.log('Email sent:', response);
+
+// Send an email campaign to multiple recipients
+const accounts = [
+  { firstName: 'John', lastName: 'Doe', email: 'john@example.com' },
+  { firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com' }
+];
+
+const campaignResponse = await ccai.email.send(
+  accounts,
+  'Monthly Newsletter',
+  '<h1>Hello ${firstName}!</h1><p>Monthly updates...</p>',
+  'newsletter@yourcompany.com',
+  'support@yourcompany.com',
+  'Your Company Newsletter',
+  'July 2025 Newsletter'
+);
+console.log('Campaign sent:', campaignResponse);
+```
+
+### Contact
+
+Manage opt-out preferences for contacts.
+
+```typescript
+import { CCAI } from 'ccai-node';
+
+const ccai = new CCAI({
+  clientId: 'YOUR-CLIENT-ID',
+  apiKey: 'API-KEY-TOKEN'
+});
+
+// Opt a contact out of text messages (by phone number)
+const result = await ccai.contact.setDoNotText(true, undefined, '+15551234567');
+console.log('Opted out:', result);
+
+// Opt a contact back in (by phone number)
+await ccai.contact.setDoNotText(false, undefined, '+15551234567');
+
+// Opt out by contactId
+await ccai.contact.setDoNotText(true, 'contact-abc-123');
+```
+
 ### Webhooks
 
-CloudContactAI can send webhook notifications when certain events occur, such as when messages are sent or received. The library provides utilities to handle these webhook events in Next.js applications.
+CloudContactAI can send webhook notifications when certain events occur, such as when messages are sent or received. Use the Webhook service to register, manage, and verify webhooks programmatically.
+
+#### Managing Webhooks
+
+```typescript
+import { CCAI, WebhookConfig, WebhookEventType } from 'ccai-node';
+
+const ccai = new CCAI({
+  clientId: 'YOUR-CLIENT-ID',
+  apiKey: 'API-KEY-TOKEN'
+});
+
+// Example 1: Register a new webhook - server generates secret automatically
+const webhookConfig: WebhookConfig = {
+  url: 'https://your-app.com/api/ccai-webhook',
+  // secret is optional - if not provided, server generates one automatically
+};
+const webhook = await ccai.webhook.register(webhookConfig);
+console.log('Webhook registered with ID:', webhook.id);
+console.log('Secret Key:', webhook.secretKey);  // Save this securely!
+
+// Example 2: Register with custom secret and event types
+const webhookCustomConfig: WebhookConfig = {
+  url: 'https://your-app.com/api/custom-webhook',
+  secret: 'your-custom-secret',  // optional - user-provided secret
+  events: [
+    WebhookEventType.MESSAGE_SENT,
+    WebhookEventType.MESSAGE_RECEIVED
+  ]
+};
+const webhookCustom = await ccai.webhook.register(webhookCustomConfig);
+console.log('Custom secret webhook registered:', webhookCustom.id);
+
+// List all registered webhooks
+const webhooks = await ccai.webhook.list();
+console.log('Registered webhooks:', webhooks.length);
+webhooks.forEach(wh => {
+  console.log(`- ID: ${wh.id}, URL: ${wh.url}`);
+});
+
+// Update a webhook
+const updateConfig: WebhookConfig = {
+  url: 'https://your-app.com/api/new-webhook',
+  events: [WebhookEventType.MESSAGE_SENT]
+};
+const updated = await ccai.webhook.update(webhook.id, updateConfig);
+console.log('Updated webhook URL:', updated.url);
+
+// Delete a webhook
+await ccai.webhook.delete(webhook.id);
+
+// Verify webhook signature (in your incoming request handler)
+const signature = req.headers['x-ccai-signature'] as string;
+const clientId = ccai.clientId;
+const eventHash = req.body.eventHash as string;  // From the webhook payload
+const secret = 'your-webhook-secret';
+const isValid = ccai.webhook.verifySignature(signature, clientId, eventHash, secret);
+
+// Parse incoming webhook event
+const event = ccai.webhook.parseEvent(JSON.stringify(req.body));
+console.log('Event type:', event.eventType);   // 'message.sent' | 'message.received'
+console.log('Event data:', event.data);
+console.log('To:', event.data.To);
+console.log('From:', event.data.From);
+console.log('Message:', event.data.Message);
+```
 
 #### Webhook Events
 
@@ -132,36 +262,34 @@ CloudContactAI currently supports the following webhook events:
 **Message Sent Event:**
 ```json
 {
-  "type": "message.sent",
-  "campaign": {
-    "id": 123,
-    "title": "Default Campaign",
-    "message": "",
-    "senderPhone": "+11234567894",
-    "createdAt": "2025-07-14 22:18:28.273",
-    "runAt": ""
-  },
-  "from": "+11234567894",
-  "to": "+11453215437",
-  "message": "this is a test message for Jon Doe"
+  "eventType": "message.sent",
+  "eventHash": "abc123def456ghi789",
+  "data": {
+    "To": "+15551234567",
+    "From": "+15551234567",
+    "Message": "Hello John, this is a test message",
+    "TotalPrice": "0.01",
+    "Segments": 1,
+    "CampaignId": "123",
+    "CampaignTitle": "Test Campaign"
+  }
 }
 ```
 
 **Message Received Event:**
 ```json
 {
-  "type": "message.received",
-  "campaign": {
-    "id": 123,
-    "title": "Default Campaign",
-    "message": "",
-    "senderPhone": "+11234567894",
-    "createdAt": "2025-07-14 22:18:28.273",
-    "runAt": ""
-  },
-  "from": "+11453215437",
-  "to": "+11234567894",
-  "message": "this is a reply message from Jon Doe"
+  "eventType": "message.received",
+  "eventHash": "xyz789abc123def456",
+  "data": {
+    "To": "+15551234567",
+    "From": "+15559876543",
+    "Message": "Reply from customer",
+    "TotalPrice": "0.01",
+    "Segments": 1,
+    "CampaignId": "123",
+    "CampaignTitle": "Test Campaign"
+  }
 }
 ```
 
@@ -170,30 +298,34 @@ CloudContactAI currently supports the following webhook events:
 ```typescript
 // pages/api/ccai-webhook.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createWebhookHandler, WebhookEventType } from 'ccai-node';
+import { createWebhookHandler, WebhookEventType, type WebhookEvent } from 'ccai-node';
 
 export default createWebhookHandler({
   // Optional: Secret for verifying webhook signatures
   secret: process.env.CCAI_WEBHOOK_SECRET,
   
-  // Handler for outbound messages
-  onMessageSent: async (event) => {
+  // Handler for outbound messages (type-safe)
+  onMessageSent: async (event: WebhookEvent) => {
     console.log('Message sent event received:');
-    console.log(`Campaign: ${event.campaign.title} (ID: ${event.campaign.id})`);
-    console.log(`From: ${event.from}`);
-    console.log(`To: ${event.to}`);
-    console.log(`Message: ${event.message}`);
+    console.log(`Event Type: ${event.eventType}`);
+    console.log(`Event Hash: ${event.eventHash}`);
+    console.log('Event Data:');
+    console.log(`- To: ${event.data.To}`);
+    console.log(`- From: ${event.data.From}`);
+    console.log(`- Message: ${event.data.Message}`);
+    console.log(`- Campaign ID: ${event.data.CampaignId}`);
     
     // Your custom logic here
   },
   
-  // Handler for inbound messages
-  onMessageReceived: async (event) => {
+  // Handler for inbound messages (type-safe)
+  onMessageReceived: async (event: WebhookEvent) => {
     console.log('Message received event received:');
-    console.log(`Campaign: ${event.campaign.title} (ID: ${event.campaign.id})`);
-    console.log(`From: ${event.from}`);
-    console.log(`To: ${event.to}`);
-    console.log(`Message: ${event.message}`);
+    console.log(`Event Type: ${event.eventType}`);
+    console.log('Event Data:');
+    console.log(`- From: ${event.data.From}`);
+    console.log(`- To: ${event.data.To}`);
+    console.log(`- Message: ${event.data.Message}`);
     
     // Your custom logic here
   },
@@ -205,22 +337,47 @@ export default createWebhookHandler({
 
 #### Simple Webhook Handler
 
-If you prefer a simpler approach, you can handle webhooks manually:
+If you prefer a simpler approach, you can handle webhooks manually with type safety:
 
 ```typescript
 // pages/api/simple-webhook.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { CCAI, type WebhookEvent, WebhookEventType } from 'ccai-node';
+
+const ccai = new CCAI({
+  clientId: process.env.CCAI_CLIENT_ID!,
+  apiKey: process.env.CCAI_API_KEY!
+});
 
 export default (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'POST') {
-    const payload = req.body;
+    const payload = req.body as WebhookEvent;
     console.log('Webhook payload:', payload);
+    console.log('Event Type:', payload.eventType);
+    console.log('Event Hash:', payload.eventHash);
     
-    // Process the webhook based on its type
-    if (payload.type === 'message.sent') {
+    // Verify signature if you have the secret
+    const signature = req.headers['x-ccai-signature'] as string;
+    const secret = process.env.CCAI_WEBHOOK_SECRET;
+    
+    if (secret && !ccai.webhook.verifySignature(
+      signature,
+      process.env.CCAI_CLIENT_ID!,
+      payload.eventHash,
+      secret
+    )) {
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+    
+    // Process the webhook based on its eventType (type-safe)
+    if (payload.eventType === WebhookEventType.MESSAGE_SENT) {
       // Handle outbound message event
-    } else if (payload.type === 'message.received') {
+      console.log('Message sent to:', payload.data.To);
+      console.log('Total Price:', payload.data.TotalPrice);
+    } else if (payload.eventType === WebhookEventType.MESSAGE_RECEIVED) {
       // Handle inbound message event
+      console.log('Message received from:', payload.data.From);
+      console.log('Message:', payload.data.Message);
     }
     
     // Always respond with a 200 status code
@@ -275,10 +432,15 @@ async function sendMessages() {
 
 - `src/` - Source code
   - `ccai.ts` - Main CCAI client class
-  - `sms/` - SMS-related functionality
+  - `sms/` - SMS and MMS functionality
     - `sms.ts` - SMS service class
     - `mms.ts` - MMS service class
-  - `webhook/` - Webhook-related functionality
+  - `email/` - Email functionality
+    - `email.ts` - Email service class
+  - `contact/` - Contact management
+    - `contact.ts` - Contact service class (opt-out)
+  - `webhook/` - Webhook functionality
+    - `webhook.ts` - Webhook service (register, list, update, delete, verify)
     - `types.ts` - Type definitions for webhook events
     - `nextjs.ts` - Next.js integration utilities
   - `index.ts` - Main exports
@@ -377,12 +539,14 @@ This project includes a `.gitignore` file that excludes:
 
 - TypeScript support with full type definitions
 - Promise-based API with async/await support
-- Support for sending SMS to multiple recipients
-- Support for sending MMS with images
-- Upload images to S3 with signed URLs
-- Webhook integration for real-time event notifications
+- Send SMS to single or multiple recipients
+- Send MMS with images (automatic upload to S3)
+- Send Email campaigns with HTML content to single or multiple recipients
+- Manage contact opt-out preferences (setDoNotText)
+- Webhook management: register, list, update, delete
+- Webhook signature verification (HMAC-SHA256)
 - Next.js API route handlers for webhook events
-- Support for template variables (firstName, lastName)
+- Template variable substitution (`${firstName}`, `${lastName}`)
 - Progress tracking via callbacks
 - Comprehensive error handling
 - Unit tests with Jest

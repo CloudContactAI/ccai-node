@@ -26,9 +26,9 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "allowUnreachableCode": false
+    "allowUnreachableCode": false,
+    "types": ["jest", "node"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"],
-  "types": ["jest", "node"]
+  "exclude": ["node_modules", "dist"]
 }

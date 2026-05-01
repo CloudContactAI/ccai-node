@@ -1,33 +1,28 @@
 /**
  * Main export file for the CCAI module
- * 
+ *
  * @license MIT
  * @copyright 2025 CloudContactAI LLC
  */
 
 import { CCAI } from './ccai';
 import type { Account, CCAIConfig } from './ccai';
-import { SMS } from './sms/sms';
-import type { SMSCampaign, SMSResponse, SMSOptions } from './sms/sms';
+import { Contact } from './contact/contact';
+import type { SetDoNotTextResponse } from './contact/contact';
+import { Email } from './email/email';
+import type { EmailAccount, EmailCampaign, EmailOptions, EmailResponse } from './email/email';
 import { MMS } from './sms/mms';
 import type { SignedUrlResponse } from './sms/mms';
-import { Email } from './email/email';
-import type { EmailCampaign, EmailResponse, EmailOptions, EmailAccount } from './email/email';
-import { Webhook } from './webhook/webhook';
+import { SMS } from './sms/sms';
+import type { SMSCampaign, SMSOptions, SMSResponse } from './sms/sms';
 import { createWebhookHandler } from './webhook/nextjs';
 import type { WebhookHandlerOptions } from './webhook/nextjs';
-import type { 
-  WebhookConfig, 
-  WebhookEvent, 
-  WebhookEventBase,
-  WebhookCampaign,
-  MessageSentEvent,
-  MessageReceivedEvent
-} from './webhook/types';
+import type { WebhookConfig, WebhookEvent } from './webhook/types';
 import { WebhookEventType } from './webhook/types';
+import { Webhook } from './webhook/webhook';
 
 // Re-export classes
-export { CCAI, SMS, MMS, Email, Webhook, WebhookEventType, createWebhookHandler };
+export { CCAI, SMS, MMS, Email, Webhook, WebhookEventType, createWebhookHandler, Contact };
 
 // Re-export types using 'export type'
 export type {
@@ -43,9 +38,6 @@ export type {
   EmailAccount,
   WebhookConfig,
   WebhookEvent,
-  WebhookEventBase,
-  WebhookCampaign,
-  MessageSentEvent,
-  MessageReceivedEvent,
-  WebhookHandlerOptions
+  WebhookHandlerOptions,
+  SetDoNotTextResponse,
 };

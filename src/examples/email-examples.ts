@@ -27,7 +27,7 @@ async function sendSingleEmail() {
       'AllCode',
       'Welcome Email'
     );
-    
+
     console.log('Email sent successfully:', response);
   } catch (error) {
     console.error('Error sending email:', error);
@@ -62,32 +62,32 @@ async function sendEmailCampaign() {
           firstName: 'John',
           lastName: 'Doe',
           email: 'john@example.com',
-          phone: ''
+          phone: '',
         },
         {
           firstName: 'Jane',
           lastName: 'Smith',
           email: 'jane@example.com',
-          phone: ''
+          phone: '',
         },
         {
           firstName: 'Bob',
           lastName: 'Johnson',
           email: 'bob@example.com',
-          phone: ''
-        }
+          phone: '',
+        },
       ],
       campaignType: 'EMAIL',
       addToList: 'noList',
       contactInput: 'accounts',
       fromType: 'single',
-      senders: []
+      senders: [],
     };
-    
+
     const response = await ccai.email.sendCampaign(campaign, {
-      onProgress: (status) => console.log(`Status: ${status}`)
+      onProgress: (status) => console.log(`Status: ${status}`),
     });
-    
+
     console.log('Email campaign sent successfully:', response);
   } catch (error) {
     console.error('Error sending email campaign:', error);
@@ -103,7 +103,7 @@ async function scheduleEmailCampaign() {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(10, 0, 0, 0);
-    
+
     const campaign: EmailCampaign = {
       subject: 'Upcoming Event Reminder',
       title: 'Event Reminder Campaign',
@@ -122,8 +122,8 @@ async function scheduleEmailCampaign() {
           firstName: 'John',
           lastName: 'Doe',
           email: 'john@example.com',
-          phone: ''
-        }
+          phone: '',
+        },
       ],
       campaignType: 'EMAIL',
       scheduledTimestamp: tomorrow.toISOString(),
@@ -131,11 +131,11 @@ async function scheduleEmailCampaign() {
       addToList: 'noList',
       contactInput: 'accounts',
       fromType: 'single',
-      senders: []
+      senders: [],
     };
-    
+
     const response = await ccai.email.sendCampaign(campaign);
-    
+
     console.log('Email campaign scheduled successfully:', response);
   } catch (error) {
     console.error('Error scheduling email campaign:', error);
@@ -177,7 +177,7 @@ async function sendHtmlTemplateEmail() {
       </body>
       </html>
     `;
-    
+
     const response = await ccai.email.sendSingle(
       'John',
       'Doe',
@@ -189,7 +189,7 @@ async function sendHtmlTemplateEmail() {
       'Your Company',
       'Welcome HTML Template Email'
     );
-    
+
     console.log('HTML template email sent successfully:', response);
   } catch (error) {
     console.error('Error sending HTML template email:', error);

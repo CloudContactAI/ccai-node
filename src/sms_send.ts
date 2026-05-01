@@ -9,11 +9,11 @@ const ccai = new CCAI({
 async function sendSMS() {
   try {
     const response = await ccai.sms.sendSingle(
-      "John",
-      "Doe", 
-"+15551234567",
-      "Hello ${firstName}, this is a test SMS!",
-      "SMS Test"
+      'John',
+      'Doe',
+      '+15551234567',
+      'Hello ${firstName}, this is a test SMS!',
+      'SMS Test'
     );
     console.log('SMS sent successfully:', response);
   } catch (error) {
