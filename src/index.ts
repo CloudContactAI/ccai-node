@@ -5,6 +5,10 @@
  * @copyright 2025 CloudContactAI LLC
  */
 
+import { Brands } from './brands/brands';
+import type { BrandData, BrandResponse } from './brands/brands';
+import { Campaigns } from './campaigns/campaigns';
+import type { CampaignData, CampaignResponse } from './campaigns/campaigns';
 import { CCAI } from './ccai';
 import type { Account, CCAIConfig } from './ccai';
 import { Contact } from './contact/contact';
@@ -22,7 +26,18 @@ import { WebhookEventType } from './webhook/types';
 import { Webhook } from './webhook/webhook';
 
 // Re-export classes
-export { CCAI, SMS, MMS, Email, Webhook, WebhookEventType, createWebhookHandler, Contact };
+export {
+  CCAI,
+  SMS,
+  MMS,
+  Email,
+  Webhook,
+  WebhookEventType,
+  createWebhookHandler,
+  Contact,
+  Brands,
+  Campaigns,
+};
 
 // Re-export types using 'export type'
 export type {
@@ -40,4 +55,8 @@ export type {
   WebhookEvent,
   WebhookHandlerOptions,
   SetDoNotTextResponse,
+  BrandData,
+  BrandResponse,
+  CampaignData,
+  CampaignResponse,
 };

@@ -87,9 +87,10 @@ coverage/
 image.jpg
 
 # Real API tests — local only
-# Real API tests — local only
 src/test_real.ts
 dist/test_real.js
 dist/test_real.d.ts
 test_real.ts
 test-progress.ts
+
+.claude/

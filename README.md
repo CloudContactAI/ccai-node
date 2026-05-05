@@ -116,6 +116,130 @@ async function sendMmsWithImage() {
 sendMmsWithImage();
 ```
 
+### Brands
+
+Register and manage brands for TCR (The Campaign Registry) business verification.
+
+```typescript
+import { CCAI } from 'ccai-node';
+
+const ccai = new CCAI({
+  clientId: 'YOUR-CLIENT-ID',
+  apiKey: 'API-KEY-TOKEN'
+});
+
+// Create a brand
+const brand = await ccai.brands.create({
+  legalCompanyName: 'Collect.org Inc.',
+  dba: 'Collect',
+  entityType: 'NON_PROFIT',
+  taxId: '123456789',
+  taxIdCountry: 'US',
+  country: 'US',
+  verticalType: 'NON_PROFIT',
+  websiteUrl: 'https://www.collect.org',
+  street: '123 Main Street',
+  city: 'San Francisco',
+  state: 'CA',
+  postalCode: '94105',
+  contactFirstName: 'Jane',
+  contactLastName: 'Doe',
+  contactEmail: 'jane@collect.org',
+  contactPhone: '+14155551234'
+});
+console.log('Brand created:', brand.id);
+
+// Get a brand by ID
+const fetched = await ccai.brands.get(brand.id);
+console.log('Website match score:', fetched.websiteMatchScore);
+
+// List all brands for the account
+const brands = await ccai.brands.list();
+console.log(`Found ${brands.length} brand(s)`);
+
+// Update a brand (partial update)
+const updated = await ccai.brands.update(brand.id, {
+  street: '456 Oak Avenue',
+  city: 'Los Angeles'
+});
+
+// Delete a brand
+await ccai.brands.delete(brand.id);
+```
+
+#### Entity Types
+
+`PRIVATE_PROFIT`, `PUBLIC_PROFIT`, `NON_PROFIT`, `GOVERNMENT`, `SOLE_PROPRIETOR`
+
+> Note: `PUBLIC_PROFIT` entities require `stockSymbol` and `stockExchange` fields.
+
+#### Vertical Types
+
+`AUTOMOTIVE`, `AGRICULTURE`, `BANKING`, `COMMUNICATION`, `CONSTRUCTION`, `EDUCATION`, `ENERGY`, `ENTERTAINMENT`, `GOVERNMENT`, `HEALTHCARE`, `HOSPITALITY`, `INSURANCE`, `LEGAL`, `MANUFACTURING`, `NON_PROFIT`, `PROFESSIONAL`, `REAL_ESTATE`, `RETAIL`, `TECHNOLOGY`, `TRANSPORTATION`
+
+### Campaigns
+
+Register and manage campaigns for TCR (The Campaign Registry) carrier vetting. Each campaign must be linked to a verified brand.
+
+```typescript
+import { CCAI } from 'ccai-node';
+
+const ccai = new CCAI({
+  clientId: 'YOUR-CLIENT-ID',
+  apiKey: 'API-KEY-TOKEN'
+});
+
+// Create a campaign
+const campaign = await ccai.campaigns.create({
+  brandId: 1,
+  useCase: 'MIXED',
+  subUseCases: ['CUSTOMER_CARE', 'TWO_FACTOR_AUTHENTICATION', 'ACCOUNT_NOTIFICATION'],
+  description: 'Security codes and support messaging.',
+  messageFlow: 'Users opt-in via signup form at https://example.com/signup',
+  hasEmbeddedLinks: true,
+  hasEmbeddedPhone: false,
+  isAgeGated: false,
+  isDirectLending: false,
+  optInKeywords: ['START'],
+  optInMessage: 'Welcome! Reply STOP to cancel.',
+  optInProofUrl: 'https://example.com/opt-in-proof.png',
+  helpKeywords: ['HELP'],
+  helpMessage: 'For HELP email support@example.com.',
+  optOutKeywords: ['STOP'],
+  optOutMessage: 'STOP received. You are unsubscribed.',
+  sampleMessages: [
+    'Your code is 554321. Reply STOP to cancel.',
+    'Your ticket has been updated. Reply HELP for info.'
+  ]
+});
+console.log('Campaign created:', campaign.id);
+
+// Get a campaign by ID
+const fetchedCampaign = await ccai.campaigns.get(campaign.id);
+
+// List all campaigns for the account
+const campaigns = await ccai.campaigns.list();
+console.log(`Found ${campaigns.length} campaign(s)`);
+
+// Update a campaign (partial update)
+const updatedCampaign = await ccai.campaigns.update(campaign.id, {
+  description: 'Updated description.'
+});
+
+// Delete a campaign
+await ccai.campaigns.delete(campaign.id);
+```
+
+#### Use Cases
+
+`TWO_FACTOR_AUTHENTICATION`, `ACCOUNT_NOTIFICATION`, `CUSTOMER_CARE`, `DELIVERY_NOTIFICATION`, `FRAUD_ALERT`, `HIGHER_EDUCATION`, `LOW_VOLUME_MIXED`, `MARKETING`, `MIXED`, `POLLING_VOTING`, `PUBLIC_SERVICE_ANNOUNCEMENT`, `SECURITY_ALERT`
+
+> Note: `MIXED` and `LOW_VOLUME_MIXED` campaigns require 2–3 `subUseCases`.
+
+#### Sub-Use Cases
+
+`TWO_FACTOR_AUTHENTICATION`, `ACCOUNT_NOTIFICATION`, `CUSTOMER_CARE`, `DELIVERY_NOTIFICATION`, `FRAUD_ALERT`, `MARKETING`, `POLLING_VOTING`
+
 ### Email
 
 ```typescript
@@ -542,6 +666,8 @@ This project includes a `.gitignore` file that excludes:
 - Send SMS to single or multiple recipients
 - Send MMS with images (automatic upload to S3)
 - Send Email campaigns with HTML content to single or multiple recipients
+- Brand registration and management for TCR verification
+- Campaign registration and management for TCR carrier vetting
 - Manage contact opt-out preferences (setDoNotText)
 - Webhook management: register, list, update, delete
 - Webhook signature verification (HMAC-SHA256)

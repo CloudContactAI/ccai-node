@@ -8,6 +8,8 @@
  */
 
 import axios, { AxiosResponse } from 'axios';
+import { Brands } from './brands/brands';
+import { Campaigns } from './campaigns/campaigns';
 import { Contact } from './contact/contact';
 import { Email } from './email/email';
 import { MMS } from './sms/mms';
@@ -18,11 +20,13 @@ import { Webhook } from './webhook/webhook';
 const PROD_BASE_URL = 'https://core.cloudcontactai.com/api';
 const PROD_EMAIL_URL = 'https://email-campaigns.cloudcontactai.com/api/v1';
 const PROD_FILES_URL = 'https://files.cloudcontactai.com';
+const PROD_COMPLIANCE_URL = 'https://compliance.cloudcontactai.com/api';
 
 // Test environment URLs
 const TEST_BASE_URL = 'https://core-test-cloudcontactai.allcode.com/api';
 const TEST_EMAIL_URL = 'https://email-campaigns-test-cloudcontactai.allcode.com/api/v1';
 const TEST_FILES_URL = 'https://files-test-cloudcontactai.allcode.com';
+const TEST_COMPLIANCE_URL = 'https://compliance-test-cloudcontactai.allcode.com/api';
 
 /**
  * Account representing a message recipient.
@@ -73,6 +77,8 @@ export type CCAIConfig = {
   emailBaseUrl?: string;
   /** Override base URL for the Files API */
   filesBaseUrl?: string;
+  /** Override base URL for the Compliance API */
+  complianceBaseUrl?: string;
 };
 
 /**
@@ -84,6 +90,7 @@ export class CCAI {
   private baseUrl: string;
   private emailBaseUrl: string;
   private filesBaseUrl: string;
+  private complianceBaseUrl: string;
   private useTestEnvironment: boolean;
 
   /** SMS service for sending text messages */
@@ -97,6 +104,8 @@ export class CCAI {
 
   /** Webhook service for managing webhook endpoints */
   public webhook: Webhook;
+  public brands: Brands;
+  public campaigns: Campaigns;
 
   /** Contact service for managing contact preferences */
   public contact: Contact;
@@ -135,12 +144,21 @@ export class CCAI {
       TEST_FILES_URL
     );
 
+    this.complianceBaseUrl = this.resolveUrl(
+      config.complianceBaseUrl,
+      process.env.CCAI_COMPLIANCE_BASE_URL,
+      PROD_COMPLIANCE_URL,
+      TEST_COMPLIANCE_URL
+    );
+
     // Initialize the services
     this.sms = new SMS(this);
     this.mms = new MMS(this);
     this.email = new Email(this);
     this.webhook = new Webhook(this);
     this.contact = new Contact(this);
+    this.brands = new Brands(this);
+    this.campaigns = new Campaigns(this);
   }
 
   /**
@@ -195,6 +213,14 @@ export class CCAI {
    */
   getFilesBaseUrl(): string {
     return this.filesBaseUrl;
+  }
+
+  /**
+   * Get the base URL for the Compliance API
+   * @returns The compliance base URL
+   */
+  getComplianceBaseUrl(): string {
+    return this.complianceBaseUrl;
   }
 
   /**
