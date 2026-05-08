@@ -71,49 +71,74 @@ const ccai = new CCAI({
   apiKey: 'API-KEY-TOKEN'
 });
 
-// Define a progress callback
-const trackProgress = (status: string) => {
-  console.log(`Progress: ${status}`);
-};
+// ── Option A: All-in-one (recommended) ─────────────────────────────────────
+// sendWithImage handles upload + send in one call
+const account: Account = { firstName: 'John', lastName: 'Doe', phone: '+15551234567' };
 
-// Create options with progress tracking
+const response = await ccai.mms.sendWithImage(
+  'path/to/image.jpg',   // local image path
+  'image/jpeg',          // content type
+  [account],             // recipients
+  'Hello ${firstName}, check out this image!',
+  'MMS Campaign',
+  // optional: senderPhone?: string
+  // optional: options?: SMSOptions
+  // optional: forceNewCampaign?: boolean (default true)
+);
+console.log(`MMS sent! Campaign ID: ${response.campaignId}`);
+
+// ── Option B: Manual workflow (step-by-step) ────────────────────────────────
+
+// Step 1 — Get a pre-signed S3 upload URL
+const { signedS3Url, fileKey } = await ccai.mms.getSignedUploadUrl(
+  'image.jpg',   // fileName
+  'image/jpeg'   // fileType
+  // optional: fileBasePath?: string
+  // optional: publicFile?: boolean
+);
+
+// Step 2 — Upload the image directly to S3
+const uploaded = await ccai.mms.uploadImageToSignedUrl(
+  signedS3Url,
+  'path/to/image.jpg',
+  'image/jpeg'
+);
+
+// Step 3 — (Optional) Confirm file is available
+const stored = await ccai.mms.checkFileUploaded(fileKey);
+console.log('File URL:', stored?.url);
+
+// Step 4a — Send to multiple recipients using the uploaded fileKey
+const bulkResponse = await ccai.mms.send(
+  fileKey,
+  [account],
+  'Hello ${firstName}!',
+  'MMS Campaign'
+  // optional: senderPhone?: string
+  // optional: options?: SMSOptions
+  // optional: forceNewCampaign?: boolean
+);
+
+// Step 4b — Send to a single recipient
+const singleResponse = await ccai.mms.sendSingle(
+  fileKey,
+  'John',
+  'Doe',
+  '+15551234567',
+  'Hello ${firstName}!',
+  'MMS Campaign'
+  // optional: customData?: string
+  // optional: senderPhone?: string
+  // optional: options?: SMSOptions
+  // optional: forceNewCampaign?: boolean
+);
+
+// ── Progress tracking ────────────────────────────────────────────────────────
 const options: SMSOptions = {
   timeout: 60000,
-  onProgress: trackProgress
+  retries: 3,
+  onProgress: (status: string) => console.log(`Progress: ${status}`)
 };
-
-// Complete MMS workflow (get URL, upload image, send MMS)
-async function sendMmsWithImage() {
-  try {
-    // Path to your image file
-    const imagePath = 'path/to/your/image.jpg';
-    const contentType = 'image/jpeg';
-    
-    // Define recipient
-    const account: Account = {
-      firstName: 'John',
-      lastName: 'Doe',
-      phone: '+15551234567'
-    };
-    
-    // Send MMS with image in one step
-    const response = await ccai.mms.sendWithImage(
-      imagePath,
-      contentType,
-      [account],
-      "Hello ${firstName}, check out this image!",
-      "MMS Campaign Example",
-      options
-    );
-    
-    console.log(`MMS sent! Campaign ID: ${response.campaignId}`);
-  } catch (error) {
-    console.error('Error sending MMS:', error);
-  }
-}
-
-// Call the function
-sendMmsWithImage();
 ```
 
 ### Brands
@@ -256,11 +281,12 @@ const response = await ccai.email.sendSingle(
   'Doe',
   'john@example.com',
   'Welcome to Our Service',
-  '<p>Hello ${firstName},</p><p>Thank you for signing up!</p>',
-  'noreply@yourcompany.com',
-  'support@yourcompany.com',
-  'Your Company',
-  'Welcome Email'
+  '<p>Hello ${firstName},</p><p>Thank you for signing up!</p>',  // htmlContent (message)
+  undefined,                     // textContent: plain-text alternative (optional)
+  'noreply@yourcompany.com',     // senderEmail (optional, defaults to noreply@cloudcontactai.com)
+  'support@yourcompany.com',     // replyEmail  (optional)
+  'Your Company',                // senderName  (optional)
+  'Welcome Email'                // title       (optional)
 );
 console.log('Email sent:', response);
 
@@ -323,6 +349,9 @@ const ccai = new CCAI({
 const webhookConfig: WebhookConfig = {
   url: 'https://your-app.com/api/ccai-webhook',
   // secret is optional - if not provided, server generates one automatically
+  // method?: string           (default 'POST')
+  // integrationType?: string  (e.g. 'REST')
+  // events?: WebhookEventType[]
 };
 const webhook = await ccai.webhook.register(webhookConfig);
 console.log('Webhook registered with ID:', webhook.id);
@@ -376,10 +405,16 @@ console.log('Message:', event.data.Message);
 
 #### Webhook Events
 
-CloudContactAI currently supports the following webhook events:
+CloudContactAI supports the following webhook event types (available via `WebhookEventType` enum):
 
-1. **Message Sent (Outbound)** - Triggered when a message is sent from your CloudContactAI account
-2. **Message Received (Inbound)** - Triggered when a message is received by your CloudContactAI account
+| Event | Value | Description |
+|---|---|---|
+| `MESSAGE_SENT` | `message.sent` | Outbound message sent from your account |
+| `MESSAGE_RECEIVED` | `message.received` | Inbound message received by your account |
+| `MESSAGE_INCOMING` | `message.incoming` | Incoming message before processing |
+| `MESSAGE_EXCLUDED` | `message.excluded` | Message excluded (e.g. opted-out contact) |
+| `MESSAGE_ERROR_CARRIER` | `message.error.carrier` | Carrier-side delivery error |
+| `MESSAGE_ERROR_CLOUDCONTACT` | `message.error.cloudcontact` | Platform-side delivery error |
 
 #### Event Payload Schema
 
