@@ -1,0 +1,20 @@
+FROM node:20-alpine
+
+ARG SDK_VERSION=1.0.2
+
+# Install the published SDK from npm into /sdk
+WORKDIR /sdk
+RUN npm install ccai-node@${SDK_VERSION}
+
+# test.ts uses `require('../dist/index.js')` — symlink so that path resolves
+# to the installed package's compiled output
+RUN ln -s /sdk/node_modules/ccai-node/dist /sdk/dist
+
+# Set up the integration test runner (ts-node, typescript, etc.)
+WORKDIR /sdk/integration
+COPY integration/package.json ./
+RUN npm install
+
+COPY integration/ ./
+
+CMD ["npx", "ts-node", "--project", "tsconfig.json", "test.ts"]
