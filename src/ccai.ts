@@ -10,6 +10,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { Brands } from './brands/brands';
 import { Campaigns } from './campaigns/campaigns';
+import { ContactValidator } from './contact-validator/contact-validator';
 import { Contact } from './contact/contact';
 import { Email } from './email/email';
 import { MMS } from './sms/mms';
@@ -110,6 +111,9 @@ export class CCAI {
   /** Contact service for managing contact preferences */
   public contact: Contact;
 
+  /** Contact validator service for validating emails and phone numbers */
+  public contactValidator: ContactValidator;
+
   /**
    * Create a new CCAI client instance
    * @param config - Configuration object
@@ -159,6 +163,7 @@ export class CCAI {
     this.contact = new Contact(this);
     this.brands = new Brands(this);
     this.campaigns = new Campaigns(this);
+    this.contactValidator = new ContactValidator(this);
   }
 
   /**

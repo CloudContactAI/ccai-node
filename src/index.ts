@@ -11,6 +11,18 @@ import { Campaigns } from './campaigns/campaigns';
 import type { CampaignData, CampaignResponse } from './campaigns/campaigns';
 import { CCAI } from './ccai';
 import type { Account, CCAIConfig } from './ccai';
+import { ContactValidator } from './contact-validator/contact-validator';
+import type {
+  BulkEmailValidationResult,
+  BulkPhoneValidationResult,
+  EmailValidationMetadata,
+  EmailValidationResult,
+  PhoneInput,
+  PhoneValidationMetadata,
+  PhoneValidationResult,
+  ValidationStatus,
+  ValidationSummary,
+} from './contact-validator/contact-validator';
 import { Contact } from './contact/contact';
 import type { SetDoNotTextResponse } from './contact/contact';
 import { Email } from './email/email';
@@ -35,6 +47,7 @@ export {
   WebhookEventType,
   createWebhookHandler,
   Contact,
+  ContactValidator,
   Brands,
   Campaigns,
 };
@@ -59,4 +72,13 @@ export type {
   BrandResponse,
   CampaignData,
   CampaignResponse,
+  ValidationStatus,
+  ValidationSummary,
+  EmailValidationResult,
+  EmailValidationMetadata,
+  PhoneValidationResult,
+  PhoneValidationMetadata,
+  BulkEmailValidationResult,
+  BulkPhoneValidationResult,
+  PhoneInput,
 };

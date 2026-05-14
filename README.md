@@ -331,6 +331,45 @@ await ccai.contact.setDoNotText(false, undefined, '+15551234567');
 await ccai.contact.setDoNotText(true, 'contact-abc-123');
 ```
 
+### Contact Validator
+
+Validate email addresses and phone numbers.
+
+> Bulk endpoints accept up to 50 contacts per request and are processed server-side in chunks.
+
+```typescript
+import { CCAI } from 'ccai-node';
+
+const ccai = new CCAI({
+  clientId: 'YOUR-CLIENT-ID',
+  apiKey: 'YOUR-API-KEY'
+});
+
+// Validate a single email
+const emailResult = await ccai.contactValidator.validateEmail('user@example.com');
+console.log(emailResult.status); // "valid" | "invalid" | "risky"
+console.log(emailResult.metadata.safe_to_send); // true | false
+
+// Validate multiple emails (up to 50, processed server-side in chunks)
+const bulkEmails = await ccai.contactValidator.validateEmails([
+  'user@example.com',
+  'invalid@nonexistent.xyz'
+]);
+console.log(bulkEmails.summary); // { total: 2, valid: 1, invalid: 1, risky: 0 }
+
+// Validate a single phone number
+const phoneResult = await ccai.contactValidator.validatePhone('+15551234567', 'US');
+console.log(phoneResult.status); // "valid" | "invalid" | "landline"
+console.log(phoneResult.metadata.carrier_type); // "mobile" | "landline" | "voip"
+
+// Validate multiple phone numbers (up to 50, processed server-side in chunks)
+const bulkPhones = await ccai.contactValidator.validatePhones([
+  { phone: '+15551234567' },
+  { phone: '+15559876543', countryCode: 'US' }
+]);
+console.log(bulkPhones.summary); // { total: 2, valid: 1, invalid: 0, risky: 0, landline: 1 }
+```
+
 ### Webhooks
 
 CloudContactAI can send webhook notifications when certain events occur, such as when messages are sent or received. Use the Webhook service to register, manage, and verify webhooks programmatically.
@@ -704,6 +743,7 @@ This project includes a `.gitignore` file that excludes:
 - Brand registration and management for TCR verification
 - Campaign registration and management for TCR carrier vetting
 - Manage contact opt-out preferences (setDoNotText)
+- Validate email addresses (valid/invalid/risky) and phone numbers (valid/invalid/landline)
 - Webhook management: register, list, update, delete
 - Webhook signature verification (HMAC-SHA256)
 - Next.js API route handlers for webhook events
