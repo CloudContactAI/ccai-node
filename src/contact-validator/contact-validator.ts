@@ -23,14 +23,14 @@ export type PhoneValidationMetadata = {
 };
 
 export type EmailValidationResult = {
-  contact: string;
+  contactField: string;
   type: 'email';
   status: ValidationStatus;
   metadata: EmailValidationMetadata;
 };
 
 export type PhoneValidationResult = {
-  contact: string;
+  contactField: string;
   type: 'phone';
   status: ValidationStatus;
   metadata: PhoneValidationMetadata;
