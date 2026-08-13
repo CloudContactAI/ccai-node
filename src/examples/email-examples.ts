@@ -22,6 +22,7 @@ async function sendSingleEmail() {
       'andreas@allcode.com',
       'Welcome to Our Service',
       '<p>Hello Andreas,</p><p>Thank you for signing up for our service!</p><p>Best regards,<br>AllCode Team</p>',
+      undefined, // textContent (optional plain-text alternative)
       'noreply@allcode.com',
       'support@allcode.com',
       'AllCode',
@@ -184,6 +185,7 @@ async function sendHtmlTemplateEmail() {
       'john@example.com',
       'Welcome to Our Platform',
       htmlTemplate,
+      undefined, // textContent (optional plain-text alternative)
       'welcome@yourcompany.com',
       'support@yourcompany.com',
       'Your Company',

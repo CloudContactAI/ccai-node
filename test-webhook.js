@@ -2,18 +2,15 @@ const http = require('http');
 
 // Test webhook payload
 const testPayload = {
-  type: 'message.sent',
-  campaign: {
-    id: 123,
-    title: 'Test Campaign',
-    message: '',
-    senderPhone: '+11234567894',
-    createdAt: '2025-01-14 22:18:28.273',
-    runAt: ''
-  },
-  from: '+11234567894',
-  to: '+15551234567',
-  message: 'Hello John Doe, this is a test message!'
+  eventType: 'message.sent',
+  eventHash: 'test-event-hash-1234567890',
+  data: {
+    From: '+11234567894',
+    To: '+15551234567',
+    Message: 'Hello John Doe, this is a test message!',
+    CampaignId: '123',
+    CampaignTitle: 'Test Campaign'
+  }
 };
 
 const data = JSON.stringify(testPayload);

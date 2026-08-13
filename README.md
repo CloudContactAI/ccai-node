@@ -134,7 +134,7 @@ const uploaded = await ccai.mms.uploadImageToSignedUrl(
 
 // Step 3 — (Optional) Confirm file is available
 const stored = await ccai.mms.checkFileUploaded(fileKey);
-console.log('File URL:', stored?.url);
+console.log('File URL:', stored?.storedUrl);
 
 // Step 4a — Send to multiple recipients using the uploaded fileKey
 const bulkResponse = await ccai.mms.send(
@@ -164,10 +164,11 @@ const singleResponse = await ccai.mms.sendSingle(
 // ── Progress tracking ────────────────────────────────────────────────────────
 const options: SMSOptions = {
   timeout: 60000,
-  retries: 3,
   onProgress: (status: string) => console.log(`Progress: ${status}`)
 };
 ```
+
+`onProgress` is supported by SMS, MMS, and Email sends. `timeout` applies to MMS sends only.
 
 ### Brands
 
@@ -249,6 +250,8 @@ const campaign = await ccai.campaigns.create({
   subUseCases: ['CUSTOMER_CARE', 'TWO_FACTOR_AUTHENTICATION', 'ACCOUNT_NOTIFICATION'],
   description: 'Security codes and support messaging.',
   messageFlow: 'Users opt-in via signup form at https://example.com/signup',
+  termsLink: 'https://example.com/terms',
+  privacyLink: 'https://example.com/privacy',
   hasEmbeddedLinks: true,
   hasEmbeddedPhone: false,
   isAgeGated: false,
@@ -288,6 +291,8 @@ await ccai.campaigns.delete(campaign.id);
 `TWO_FACTOR_AUTHENTICATION`, `ACCOUNT_NOTIFICATION`, `CUSTOMER_CARE`, `DELIVERY_NOTIFICATION`, `FRAUD_ALERT`, `HIGHER_EDUCATION`, `LOW_VOLUME_MIXED`, `MARKETING`, `MIXED`, `POLLING_VOTING`, `PUBLIC_SERVICE_ANNOUNCEMENT`, `SECURITY_ALERT`
 
 > Note: `MIXED` and `LOW_VOLUME_MIXED` campaigns require 2–3 `subUseCases`.
+
+> `termsLink` and `privacyLink` are optional fields on `CampaignData`/`CampaignResponse`.
 
 #### Sub-Use Cases
 
@@ -418,20 +423,15 @@ const webhookConfig: WebhookConfig = {
   // secret is optional - if not provided, server generates one automatically
   // method?: string           (default 'POST')
   // integrationType?: string  (e.g. 'REST')
-  // events?: WebhookEventType[]
 };
 const webhook = await ccai.webhook.register(webhookConfig);
 console.log('Webhook registered with ID:', webhook.id);
 console.log('Secret Key:', webhook.secretKey);  // Save this securely!
 
-// Example 2: Register with custom secret and event types
+// Example 2: Register with a custom secret
 const webhookCustomConfig: WebhookConfig = {
   url: 'https://your-app.com/api/custom-webhook',
-  secret: 'your-custom-secret',  // optional - user-provided secret
-  events: [
-    WebhookEventType.MESSAGE_SENT,
-    WebhookEventType.MESSAGE_RECEIVED
-  ]
+  secret: 'your-custom-secret'  // optional - user-provided secret
 };
 const webhookCustom = await ccai.webhook.register(webhookCustomConfig);
 console.log('Custom secret webhook registered:', webhookCustom.id);
@@ -445,8 +445,7 @@ webhooks.forEach(wh => {
 
 // Update a webhook
 const updateConfig: WebhookConfig = {
-  url: 'https://your-app.com/api/new-webhook',
-  events: [WebhookEventType.MESSAGE_SENT]
+  url: 'https://your-app.com/api/new-webhook'
 };
 const updated = await ccai.webhook.update(webhook.id, updateConfig);
 console.log('Updated webhook URL:', updated.url);
@@ -456,7 +455,7 @@ await ccai.webhook.delete(webhook.id);
 
 // Verify webhook signature (in your incoming request handler)
 const signature = req.headers['x-ccai-signature'] as string;
-const clientId = ccai.clientId;
+const clientId = ccai.getClientId();
 const eventHash = req.body.eventHash as string;  // From the webhook payload
 const secret = 'your-webhook-secret';
 const isValid = ccai.webhook.verifySignature(signature, clientId, eventHash, secret);
@@ -482,6 +481,8 @@ CloudContactAI supports the following webhook event types (available via `Webhoo
 | `MESSAGE_EXCLUDED` | `message.excluded` | Message excluded (e.g. opted-out contact) |
 | `MESSAGE_ERROR_CARRIER` | `message.error.carrier` | Carrier-side delivery error |
 | `MESSAGE_ERROR_CLOUDCONTACT` | `message.error.cloudcontact` | Platform-side delivery error |
+
+`createWebhookHandler` (below) provides typed callbacks for `MESSAGE_SENT` and `MESSAGE_RECEIVED`. For the other four event types, read `eventType` from the parsed payload — either in the "Simple Webhook Handler" pattern below, or by calling `ccai.webhook.parseEvent()` on the raw request body in your own route handler.
 
 #### Event Payload Schema
 
@@ -521,15 +522,14 @@ CloudContactAI supports the following webhook event types (available via `Webhoo
 
 #### Using Webhooks with Next.js
 
+`createWebhookHandler` routes `message.sent` and `message.received` events to `onMessageSent`/`onMessageReceived`. It does not verify the request signature — for signature verification, use the manual pattern in [Simple Webhook Handler](#simple-webhook-handler) below, or call `ccai.webhook.verifySignature(...)` yourself before your own routing logic.
+
 ```typescript
 // pages/api/ccai-webhook.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createWebhookHandler, WebhookEventType, type WebhookEvent } from 'ccai-node';
 
 export default createWebhookHandler({
-  // Optional: Secret for verifying webhook signatures
-  secret: process.env.CCAI_WEBHOOK_SECRET,
-  
   // Handler for outbound messages (type-safe)
   onMessageSent: async (event: WebhookEvent) => {
     console.log('Message sent event received:');
@@ -646,6 +646,8 @@ async function sendMessages() {
       "+15559876543",
       "Hi ${firstName}!",
       "Test Campaign",
+      undefined,  // customData (optional)
+      undefined,  // senderPhone (optional)
       options
     );
   } catch (error) {

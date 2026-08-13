@@ -32,6 +32,7 @@ const response = await ccai.email.sendSingle(
   'john@example.com',                        // Email address
   'Welcome to Our Service',                  // Subject
   '<p>Hello John,</p><p>Welcome!</p>',       // HTML message content
+  undefined,                                 // textContent (optional plain-text alternative)
   'noreply@yourcompany.com',                 // Sender email
   'support@yourcompany.com',                 // Reply-to email
   'Your Company',                            // Sender name
@@ -161,9 +162,7 @@ The `EmailOptions` type represents optional settings for email operations:
 
 ```typescript
 type EmailOptions = {
-  timeout?: number;                    // Optional timeout in milliseconds
-  retries?: number;                    // Optional retry count for failed requests
-  onProgress?: (status: string) => void; // Optional callback for tracking progress
+  onProgress?: (status: string) => void; // Callback for tracking send progress
 };
 ```
 
