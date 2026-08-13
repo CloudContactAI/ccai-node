@@ -14,6 +14,7 @@ async function sendEmail() {
       'andreas@allcode.com',
       'Test Email Subject',
       '<p>Hello ${firstName},</p><p>This is a test email.</p><p>Thanks,<br>AllCode Team</p>',
+      undefined, // textContent (optional plain-text alternative)
       'noreply@allcode.com',
       'support@allcode.com',
       'AllCode Team',

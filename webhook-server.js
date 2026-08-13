@@ -10,12 +10,12 @@ app.post('/webhook', (req, res) => {
   const payload = req.body;
   
   console.log('Webhook received:', payload);
-  
+
   // Handle different event types
-  if (payload.type === 'message.sent') {
-    console.log(`Message sent from ${payload.from} to ${payload.to}: ${payload.message}`);
-  } else if (payload.type === 'message.received') {
-    console.log(`Message received from ${payload.from} to ${payload.to}: ${payload.message}`);
+  if (payload.eventType === 'message.sent') {
+    console.log(`Message sent from ${payload.data?.From} to ${payload.data?.To}: ${payload.data?.Message}`);
+  } else if (payload.eventType === 'message.received') {
+    console.log(`Message received from ${payload.data?.From} to ${payload.data?.To}: ${payload.data?.Message}`);
   }
   
   // Always respond with 200
