@@ -176,4 +176,49 @@ describe('SMS Service', () => {
       await expect(sms.sendSingle('John', 'Doe', '', 'Hello', 'Test')).rejects.toThrow();
     });
   });
+
+  describe('sendWithTemplate()', () => {
+    it('should send SMS with templateId and empty message', async () => {
+      const result = await sms.sendWithTemplate([validAccount], 12345, 'Template Campaign');
+
+      expect(mockRequest).toHaveBeenCalledWith(
+        'post',
+        '/clients/client-123/campaigns/direct',
+        expect.objectContaining({
+          accounts: [validAccount],
+          message: '',
+          title: 'Template Campaign',
+          templateId: 12345,
+        })
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should include templateId when passed to send()', async () => {
+      await sms.send([validAccount], '', 'Test', undefined, undefined, 99);
+
+      expect(mockRequest).toHaveBeenCalledWith(
+        'post',
+        '/clients/client-123/campaigns/direct',
+        expect.objectContaining({ templateId: 99 })
+      );
+    });
+  });
+
+  describe('sendSingleWithTemplate()', () => {
+    it('should send SMS to a single recipient with a templateId', async () => {
+      const result = await sms.sendSingleWithTemplate('John', 'Doe', '+15551234567', 12345, 'Template Campaign');
+
+      expect(mockRequest).toHaveBeenCalledWith(
+        'post',
+        '/clients/client-123/campaigns/direct',
+        expect.objectContaining({
+          accounts: [{ firstName: 'John', lastName: 'Doe', phone: '+15551234567' }],
+          templateId: 12345,
+          title: 'Template Campaign',
+        })
+      );
+      expect(result).toEqual(mockResponse);
+    });
+  });
 });

@@ -13,6 +13,7 @@ export type SMSCampaign = {
   message: string;
   title: string;
   senderPhone?: string;
+  templateId?: number;
 };
 
 export type SMSResponse = {
@@ -68,7 +69,8 @@ export class SMS {
     message: string,
     title: string,
     senderPhone?: string,
-    options?: SMSOptions
+    options?: SMSOptions,
+    templateId?: number
   ): Promise<SMSResponse> {
     // Validate inputs
     if (!accounts || !Array.isArray(accounts) || accounts.length === 0) {
@@ -110,6 +112,10 @@ export class SMS {
 
     if (senderPhone) {
       campaignData.senderPhone = senderPhone;
+    }
+
+    if (templateId !== undefined) {
+      campaignData.templateId = templateId;
     }
 
     try {
@@ -167,5 +173,39 @@ export class SMS {
     };
 
     return this.send([account], message, title, senderPhone, options);
+  }
+
+  /**
+   * Send an SMS using a pre-approved template (for template-controlled accounts)
+   * @param accounts - Array of recipient objects
+   * @param templateId - ID of the approved template to use
+   * @param title - Campaign title
+   * @param senderPhone - Optional sender phone number
+   * @param options - Optional settings
+   */
+  async sendWithTemplate(
+    accounts: Account[],
+    templateId: number,
+    title: string,
+    senderPhone?: string,
+    options?: SMSOptions
+  ): Promise<SMSResponse> {
+    return this.send(accounts, '', title, senderPhone, options, templateId);
+  }
+
+  /**
+   * Send an SMS to a single recipient using a pre-approved template
+   */
+  async sendSingleWithTemplate(
+    firstName: string,
+    lastName: string,
+    phone: string,
+    templateId: number,
+    title: string,
+    senderPhone?: string,
+    options?: SMSOptions
+  ): Promise<SMSResponse> {
+    const account: Account = { firstName, lastName, phone };
+    return this.sendWithTemplate([account], templateId, title, senderPhone, options);
   }
 }
