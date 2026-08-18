@@ -77,7 +77,7 @@ export class SMS {
       throw new Error('At least one account is required');
     }
 
-    if (!message) throw new Error('Message is required');
+    if (!message && templateId === undefined) throw new Error('Message is required');
     if (!title) throw new Error('Campaign title is required');
 
     // Validate each account has the required fields
