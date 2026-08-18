@@ -1,7 +1,8 @@
 /**
- * Node.js SDK integration tests — 52 tests
+ * Node.js SDK integration tests — 54 tests
  * Covers: SMS (1-6), MMS (7-17), Email (18-22), Webhook (23-29), Contact (30-31),
- * Brands (32-36), Campaigns (37-42), ContactValidator (43-46), Negative cases (47-52)
+ * Brands (32-36), Campaigns (37-42), ContactValidator (43-46), Negative cases (47-52),
+ * SMS Templates (53-54)
  *
  * Test results use three states:
  *   PASS — the test ran and all assertions held
@@ -142,6 +143,7 @@ async function main(): Promise<void> {
     'CCAI_TEST_FIRST_NAME_3',
     'CCAI_TEST_LAST_NAME_3',
     'WEBHOOK_URL',
+    'CCAI_TEST_TEMPLATE_ID',
   ];
   const missing = REQUIRED_ENV.filter((key) => !process.env[key]);
   if (missing.length > 0) {
@@ -163,6 +165,7 @@ async function main(): Promise<void> {
   const lastName2 = process.env.CCAI_TEST_LAST_NAME_2!;
   const firstName3 = process.env.CCAI_TEST_FIRST_NAME_3!;
   const lastName3 = process.env.CCAI_TEST_LAST_NAME_3!;
+  const templateId = Number(process.env.CCAI_TEST_TEMPLATE_ID);
 
   // Unique per-run suffix so parallel SDK runs don't collide on the same webhook URL
   const runId = `node-${Date.now().toString(36)}`;
@@ -844,6 +847,23 @@ async function main(): Promise<void> {
         'nonexistent fileKey accepted',
         'Node Permissive 52'
       );
+      assertSendResponse(resp);
+    });
+
+    console.log('\n--- SMS Templates ---');
+
+    await run('53 SMS.sendWithTemplate', async () => {
+      const resp = await client.sms.sendWithTemplate(
+        [
+          { firstName: firstName1, lastName: lastName1, phone: phone1 },
+          { firstName: firstName2, lastName: lastName2, phone: phone2 },
+        ], templateId, 'Node Template Test'
+      );
+      assertSendResponse(resp);
+    });
+
+    await run('54 SMS.sendSingleWithTemplate', async () => {
+      const resp = await client.sms.sendSingleWithTemplate(firstName1, lastName1, phone1, templateId, 'Node Single Template Test');
       assertSendResponse(resp);
     });
   } finally {
