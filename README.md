@@ -60,6 +60,34 @@ ccai.sms.sendSingle(
   .catch(error => console.error('Error:', error));
 ```
 
+### SMS — Template-Controlled Accounts
+
+If an account has been configured to enforce template-only messaging, all campaigns must reference a pre-approved template ID. Sending a free-text message to such an account will result in a `422` error.
+
+```typescript
+// Send to multiple recipients using a template
+ccai.sms.sendWithTemplate(
+  accounts,
+  12345,           // templateId — the ID of the approved template
+  "My Campaign"
+)
+  .then(response => console.log('Success:', response))
+  .catch(error => console.error('Error:', error));
+
+// Send to a single recipient using a template
+ccai.sms.sendSingleWithTemplate(
+  "John",
+  "Doe",
+  "+15551234567",
+  12345,           // templateId
+  "My Campaign"
+)
+  .then(response => console.log('Success:', response))
+  .catch(error => console.error('Error:', error));
+```
+
+The message body is resolved server-side from the template. Variable substitution (e.g. `${firstName}`) is applied automatically using the recipient's account data.
+
 ### MMS
 
 ```typescript
