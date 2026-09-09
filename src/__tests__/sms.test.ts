@@ -207,7 +207,13 @@ describe('SMS Service', () => {
 
   describe('sendSingleWithTemplate()', () => {
     it('should send SMS to a single recipient with a templateId', async () => {
-      const result = await sms.sendSingleWithTemplate('John', 'Doe', '+15551234567', 12345, 'Template Campaign');
+      const result = await sms.sendSingleWithTemplate(
+        'John',
+        'Doe',
+        '+15551234567',
+        12345,
+        'Template Campaign'
+      );
 
       expect(mockRequest).toHaveBeenCalledWith(
         'post',
