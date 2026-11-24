@@ -403,6 +403,60 @@ const bulkPhones = await ccai.contactValidator.validatePhones([
 console.log(bulkPhones.summary); // { total: 2, valid: 1, invalid: 0, risky: 0, landline: 1 }
 ```
 
+#### Email validation details
+
+Email validation uses Amazon SES. Nothing is sent to the address. Besides `status` and `metadata.safe_to_send`, each email result carries these optional fields in `metadata`:
+
+| Field | Type | Description |
+|---|---|---|
+| `verdict` | `'HIGH' \| 'MEDIUM' \| 'LOW' \| 'UNKNOWN'` | The overall verdict. A verdict SES does not return is `UNKNOWN`. |
+| `checks` | object | Six checks, each with its own verdict (see below). |
+| `validatedAt` | `string \| null` | When SES checked the address (ISO 8601). `null` when the address was rejected without a check. |
+| `reused` | `boolean` | `true` when the result is a saved check from the last 30 days, instead of a new one. |
+| `error` | `string` | Why the address was rejected or could not be checked, for example `Invalid email format`. |
+
+| Check | Meaning | Good value |
+|---|---|---|
+| `hasValidSyntax` | The address follows RFC format rules | `HIGH` |
+| `hasValidDnsRecords` | The domain exists and has DNS/MX records to receive mail | `HIGH` |
+| `mailboxExists` | The mailbox exists and can receive messages | `HIGH` |
+| `isRoleAddress` | A role address such as `admin@`, `support@` or `info@` | `LOW` |
+| `isDisposable` | A disposable or temporary email provider | `LOW` |
+| `isRandomInput` | The address looks randomly generated | `LOW` |
+
+`status` follows from the verdicts: `LOW` is `invalid`; `MEDIUM`, an unknown verdict, or a disposable address is `risky`; `HIGH` is `valid`. `safe_to_send` is `true` only for `valid`, and `ai_verdict` repeats `status`.
+
+```typescript
+const result = await ccai.contactValidator.validateEmail('user@example.com');
+console.log(result.metadata.verdict);               // "HIGH"
+console.log(result.metadata.checks?.isDisposable);  // "LOW"
+console.log(result.metadata.validatedAt);           // "2026-11-13T15:02:11Z"
+console.log(result.metadata.reused);                // false
+```
+
+The fields are optional: results from before the account had Email Address Validation, and addresses that SES failed to check in a bulk request, do not have them. A saved result is reused for 30 days, so asking again for the same address inside that time is free and does not count toward the quota. Bulk email requests accept up to 10 addresses.
+
+#### Errors
+
+A failed request throws an `Error` whose message starts with `API Error: <status> - <body>`:
+
+| Status | When |
+|---|---|
+| `400` | The request has no body, or more than 10 emails. |
+| `403` | Email validation is not enabled for the account. Ask CloudContactAI to turn it on. |
+| `429` | The account used its quota of SES checks (10 per minute). Retry after the time in the message. |
+| `502` | SES rejected the check. The body has the AWS message. If your account uses its own AWS keys for email, the IAM user needs the `ses:GetEmailAddressInsights` permission. Single email endpoint only: in a bulk request an address that SES fails to check comes back as `invalid`, with the reason in `metadata.error`. |
+
+```typescript
+try {
+  await ccai.contactValidator.validateEmail('user@example.com');
+} catch (error) {
+  if (error instanceof Error && error.message.startsWith('API Error: 403')) {
+    // Email validation is not enabled for this account
+  }
+}
+```
+
 ### Webhooks
 
 CloudContactAI can send webhook notifications when certain events occur, such as when messages are sent or received. Use the Webhook service to register, manage, and verify webhooks programmatically.

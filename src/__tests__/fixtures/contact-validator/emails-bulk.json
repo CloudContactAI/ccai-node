@@ -1,0 +1,53 @@
+{
+  "results": [
+    {
+      "contactField": "jane@example.com",
+      "type": "email",
+      "status": "valid",
+      "metadata": {
+        "safe_to_send": true,
+        "ai_verdict": "valid",
+        "verdict": "HIGH",
+        "checks": {
+          "hasValidSyntax": "HIGH",
+          "hasValidDnsRecords": "HIGH",
+          "mailboxExists": "HIGH",
+          "isRoleAddress": "LOW",
+          "isDisposable": "LOW",
+          "isRandomInput": "LOW"
+        },
+        "validatedAt": "2026-11-13T15:02:11Z",
+        "reused": true
+      }
+    },
+    {
+      "contactField": "temp@mailinator.com",
+      "type": "email",
+      "status": "risky",
+      "metadata": {
+        "safe_to_send": false,
+        "ai_verdict": "risky",
+        "verdict": "MEDIUM",
+        "checks": {
+          "hasValidSyntax": "HIGH",
+          "hasValidDnsRecords": "HIGH",
+          "mailboxExists": "MEDIUM",
+          "isRoleAddress": "LOW",
+          "isDisposable": "HIGH",
+          "isRandomInput": "LOW"
+        },
+        "validatedAt": "2026-11-13T15:05:40Z",
+        "reused": false
+      }
+    },
+    {
+      "contactField": "bad@example.com",
+      "type": "email",
+      "status": "invalid",
+      "metadata": {
+        "error": "The domain is not allowed"
+      }
+    }
+  ],
+  "summary": { "total": 3, "valid": 1, "invalid": 1, "risky": 1 }
+}

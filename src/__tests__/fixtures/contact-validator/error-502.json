@@ -1,0 +1,6 @@
+{
+  "status": 502,
+  "error": "Bad Gateway",
+  "message": "Your AWS IAM user needs the ses:GetEmailAddressInsights permission for email validation.",
+  "path": "/api/v1/contact-validator/email"
+}

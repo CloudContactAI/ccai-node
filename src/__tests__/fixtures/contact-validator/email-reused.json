@@ -1,0 +1,20 @@
+{
+  "contactField": "jane@example.com",
+  "type": "email",
+  "status": "valid",
+  "metadata": {
+    "safe_to_send": true,
+    "ai_verdict": "valid",
+    "verdict": "HIGH",
+    "checks": {
+      "hasValidSyntax": "HIGH",
+      "hasValidDnsRecords": "HIGH",
+      "mailboxExists": "HIGH",
+      "isRoleAddress": "LOW",
+      "isDisposable": "LOW",
+      "isRandomInput": "LOW"
+    },
+    "validatedAt": "2026-11-13T15:02:11Z",
+    "reused": true
+  }
+}

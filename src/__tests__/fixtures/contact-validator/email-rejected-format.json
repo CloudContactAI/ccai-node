@@ -1,0 +1,21 @@
+{
+  "contactField": "not-an-email",
+  "type": "email",
+  "status": "invalid",
+  "metadata": {
+    "safe_to_send": false,
+    "ai_verdict": "invalid",
+    "verdict": "UNKNOWN",
+    "checks": {
+      "hasValidSyntax": "UNKNOWN",
+      "hasValidDnsRecords": "UNKNOWN",
+      "mailboxExists": "UNKNOWN",
+      "isRoleAddress": "UNKNOWN",
+      "isDisposable": "UNKNOWN",
+      "isRandomInput": "UNKNOWN"
+    },
+    "validatedAt": null,
+    "reused": false,
+    "error": "Invalid email format"
+  }
+}
