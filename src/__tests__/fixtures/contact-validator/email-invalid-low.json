@@ -1,0 +1,20 @@
+{
+  "contactField": "nobody@no-such-domain-example.xyz",
+  "type": "email",
+  "status": "invalid",
+  "metadata": {
+    "safe_to_send": false,
+    "ai_verdict": "invalid",
+    "verdict": "LOW",
+    "checks": {
+      "hasValidSyntax": "HIGH",
+      "hasValidDnsRecords": "LOW",
+      "mailboxExists": "LOW",
+      "isRoleAddress": "LOW",
+      "isDisposable": "LOW",
+      "isRandomInput": "MEDIUM"
+    },
+    "validatedAt": "2026-11-13T15:07:03Z",
+    "reused": false
+  }
+}

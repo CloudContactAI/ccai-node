@@ -1,0 +1,20 @@
+{
+  "contactField": "temp@mailinator.com",
+  "type": "email",
+  "status": "risky",
+  "metadata": {
+    "safe_to_send": false,
+    "ai_verdict": "risky",
+    "verdict": "HIGH",
+    "checks": {
+      "hasValidSyntax": "HIGH",
+      "hasValidDnsRecords": "HIGH",
+      "mailboxExists": "MEDIUM",
+      "isRoleAddress": "LOW",
+      "isDisposable": "HIGH",
+      "isRandomInput": "LOW"
+    },
+    "validatedAt": "2026-11-13T15:05:40Z",
+    "reused": false
+  }
+}

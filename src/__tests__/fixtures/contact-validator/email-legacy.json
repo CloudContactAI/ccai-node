@@ -1,0 +1,9 @@
+{
+  "contactField": "jane@example.com",
+  "type": "email",
+  "status": "valid",
+  "metadata": {
+    "safe_to_send": true,
+    "ai_verdict": "Mode: Sandbox"
+  }
+}
